@@ -347,7 +347,7 @@ class QuizBot:
         
     
 if __name__ == "__main__":
-    bot_token = "6306869044:AAGh79xhZ4tOWNOPjk29r6uWvgPTg-Wyc2s"
+    bot_token = "6982141096:AAFpEspslCkO0KWNbONnmWjUU_87jib__g8"
     while True:
         try:
             keep_alive()
