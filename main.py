@@ -347,10 +347,11 @@ class QuizBot:
         
     
 if __name__ == "__main__":
+    keep_alive()
     bot_token = "6982141096:AAFpEspslCkO0KWNbONnmWjUU_87jib__g8"
     while True:
         try:
-            keep_alive()
+            
             quiz_bot = QuizBot(bot_token)
             quiz_bot.start()
         except:
