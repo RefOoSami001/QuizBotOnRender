@@ -443,11 +443,6 @@ class QuizBot:
 if __name__ == "__main__":
     keep_alive()
     bot_token = "6982141096:AAFpEspslCkO0KWNbONnmWjUU_87jib__g8"
-    while True:
-        try:
-            quiz_bot = QuizBot(bot_token)
-            quiz_bot.start()
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            # You might want to add a delay before retrying to avoid hitting API rate limits
-            time.sleep(5)  # 5 seconds delay before retrying
+    quiz_bot = QuizBot(bot_token)
+    quiz_bot.start()
+
