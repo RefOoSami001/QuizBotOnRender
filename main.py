@@ -4,6 +4,7 @@ from io import BytesIO
 from get_questions import get_questions
 from keep_alive import keep_alive
 import time
+import random
 from fpdf import FPDF
 import json
 class QuizBot:
@@ -14,46 +15,69 @@ class QuizBot:
         self.DIFF = None
 
 
-    def send_pdf(self, chat_id, questions):
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-
-        # Add the title
-        pdf.cell(200, 10, txt="Generated Quiz", ln=True, align='C')
-        pdf.ln(10)
-
-        # Iterate over questions to render them in the PDF
-        for i, (q_num, q_data) in enumerate(questions.items(), start=1):
-            pdf.set_font("Arial", style="B", size=12)
-            pdf.cell(0, 10, f"{i}. {q_data['text']}", ln=True)  # Question text
+    def send_pdf(self, chat_id, questions_data):
+        try:
+            # Create the PDF object
+            pdf = FPDF()
+            pdf.add_page()
             pdf.set_font("Arial", size=12)
 
-            # Render each option
-            for opt, ans in q_data["options"].items():
-                # Highlight the correct answer in green
-                if opt == q_data["answer"]:  # Assuming `correct` contains the correct option key
-                    pdf.set_text_color(0, 128, 0)  # Green color
-                else:
-                    pdf.set_text_color(0, 0, 0)  # Black color
-                
-                pdf.cell(0, 10, f"   {opt}. {ans}", ln=True)
+            # Add the title
+            title = questions_data.get('title', 'Generated Quiz')
+            pdf.cell(200, 10, txt=title, ln=True, align='C')
+            pdf.ln(10)
 
-            pdf.ln(5)
+            # Add each question
+            questions = questions_data.get('questions', [])
+            for i, question_data in enumerate(questions, start=1):
+                question_text = question_data.get('question', 'No question text provided')
+                options = question_data.get('options', [])
 
-        # Write PDF content to a BytesIO object
-        output = BytesIO()
-        pdf_data = pdf.output(dest='S').encode('latin1', 'ignore')  # Add 'ignore' to safely handle characters
-        output.write(pdf_data)
-        output.seek(0)  # Move the cursor to the beginning of the BytesIO object
+                # Shuffle the options to randomize their order
+                random.shuffle(options)
 
-        # Sending the document via Telegram bot with a proper filename
-        self.bot.send_document(
-            chat_id,
-            output,
-            visible_file_name="MyQuiz.pdf"
-        )
+                # Write the question
+                pdf.set_font("Arial", style="B", size=12)
+                pdf.cell(0, 10, f"{i}. {question_text}", ln=True)
+                pdf.set_font("Arial", size=12)
 
+                # Write the options
+                for opt in options:
+                    option_text = opt.get('option', 'No option text')
+                    is_correct = opt.get('is_correct', False)
+
+                    if is_correct:
+                        # Correct answer: Green and Bold
+                        pdf.set_text_color(0, 128, 0)  # Green color
+                        pdf.set_font("Arial", style="B", size=12)  # Bold
+                    else:
+                        # Other answers: Black
+                        pdf.set_text_color(0, 0, 0)  # Black color
+                        pdf.set_font("Arial", size=12)  # Regular font
+                    
+                    pdf.cell(0, 10, f"   - {option_text}", ln=True)
+
+                # Add explanation in bold
+                explanation = question_data.get('explanation', 'No explanation provided')
+                pdf.set_text_color(50, 50, 50)  # Gray for explanations
+                pdf.set_font("Arial", style="B", size=12)  # Bold font for explanation
+                pdf.multi_cell(0, 10, f"   Explanation: {explanation}")
+                pdf.ln(5)  # Add space between questions
+
+            # Write PDF content to a BytesIO object
+            output = BytesIO()
+            pdf_data = pdf.output(dest='S').encode('latin1', 'ignore')  # Add 'ignore' to safely handle characters
+            output.write(pdf_data)
+            output.seek(0)  # Move the cursor to the beginning of the BytesIO object
+
+            # Sending the document via Telegram bot with a proper filename
+            self.bot.send_document(
+                chat_id,
+                output,
+                visible_file_name=f"{title}.pdf"
+            )
+        except Exception as e:
+            print(f"An error occurred while generating the PDF: {e}")
 
 
 
@@ -165,7 +189,7 @@ class QuizBot:
             self.bot.register_next_step_handler(call.message, self.get_topic_from_pdf)
             
 
-        @self.bot.callback_query_handler(func=lambda call: call.data in ["5", "10", "15", "30"])
+        @self.bot.callback_query_handler(func=lambda call: call.data in ["5", "10", "15", "20","25","30"])
         def select_num_questions(call):
             self.NUM_QUESTIONS = call.data
             self.create_quiz(call.message)
@@ -278,23 +302,25 @@ class QuizBot:
         markup = telebot.types.InlineKeyboardMarkup()
         markup.row_width = 3  # Adjust to display 3 buttons per row
         markup.add(
-            telebot.types.InlineKeyboardButton("15", callback_data="5"),
-            telebot.types.InlineKeyboardButton("30", callback_data="10"),
-            telebot.types.InlineKeyboardButton("45", callback_data="15"),
-            telebot.types.InlineKeyboardButton("90", callback_data="30"),
+            telebot.types.InlineKeyboardButton("5", callback_data="5"),
+            telebot.types.InlineKeyboardButton("10", callback_data="10"),
+            telebot.types.InlineKeyboardButton("15", callback_data="15"),
+            telebot.types.InlineKeyboardButton("20", callback_data="20"),
+            telebot.types.InlineKeyboardButton("25", callback_data="25"),
+            telebot.types.InlineKeyboardButton("30", callback_data="30"),
         )
         # Send the message with the buttons
         sent_message = self.bot.send_message(
             message.chat.id, 
             "*اختار عدد الأسئلة التي تحتاجها* 😌\n\n"
-            "يتم تحديد العدد بناءً على حجم المحتوى وصعوبة الأسئلة. ",
+            "يتم تحديد العدد بناءً على حجم المحتوى . ",
             reply_markup=markup, 
             parse_mode='Markdown'
         )
 
 
  
-            
+        
     def create_quiz(self, message):
         self.bot.delete_message(message.chat.id, message.message_id)
         wait_message = self.bot.send_message(
@@ -302,75 +328,67 @@ class QuizBot:
             "*جارٍ إنشاء الأسئلة* 🫣\n\n"
             "🔹 تأكد من مراجعة الأسئلة بعد الإنشاء.\n"
             "🔹 قد يستغرق الأمر بعض الوقت، يرجى الانتظار.",
-            parse_mode='Markdown')
+            parse_mode='Markdown')        
         loading_animation = self.bot.send_sticker(message.chat.id, "CAACAgIAAxkBAAIU1GYOk5jWvCvtykd7TZkeiFFZRdUYAAIjAAMoD2oUJ1El54wgpAY0BA")
+
+        parsed_data = get_questions(self.TOPIC, self.NUM_QUESTIONS)
+
+        self.bot.delete_message(message.chat.id, wait_message.message_id)
+        self.bot.delete_message(message.chat.id, loading_animation.message_id)
         
-        difficulty_levels = [0, 1, 2]  # Difficulty levels to fetch
-        all_questions = []  # List to accumulate questions from all levels
-
         try:
-            # Loop through difficulty levels and fetch questions
-            for level in difficulty_levels:
-                parsed_data = get_questions(self.TOPIC, self.NUM_QUESTIONS, level)
+            # Check if parsed_data is a string and parse it to a dictionary
+            parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
 
-                # Parse the response if it's a JSON string
-                parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
+            if isinstance(parsed_data, dict) and 'questions' in parsed_data:  # Ensure the data contains a 'questions' key
+                for question_data in parsed_data['questions']:
+                    try:
+                        question_text = question_data["question"]
+                        options = question_data["options"]
+                        
+                        # Extract options and correct answer
+                        options_list = [option['option'] for option in options]
+                        correct_answer = next(option['option'] for option in options if option['is_correct'])
+                        
+                        # Shuffle options and find the new correct answer index
+                        random.shuffle(options_list)
+                        correct_option_id = options_list.index(correct_answer)
 
-                if isinstance(parsed_data, dict) and 'questions' in parsed_data:  # Ensure valid structure
-                    all_questions.extend(parsed_data['questions'])  # Add questions to the main list
-                else:
-                    print(f"Invalid response format for difficulty level {level}: {parsed_data}")
+                        explanation = question_data.get("explanation", "لا يوجد شرح لهذا السؤال.")  # Default explanation if missing
 
-            # Remove the loading messages
-            try:
-                self.bot.delete_message(message.chat.id, wait_message.message_id)
-                self.bot.delete_message(message.chat.id, loading_animation.message_id)
-            except Exception as e:
-                print(f"Error deleting messages: {e}")
-            # Process the combined questions
-            for question_data in all_questions:
-                try:
-                    question_text = question_data["question"]
-                    options = question_data["options"]
-                    correct_answer = next(option['option'] for option in options if option['is_correct'])
-                    explanation = question_data.get("explanation", "لا توجد شرح لهذا السؤال.")  # Default explanation
-                    options_list = [option['option'] for option in options]
+                        # Skip questions with overly long options
+                        if any(len(option) > 100 for option in options_list):
+                            continue
 
-                    # Skip questions with overly long options
-                    if any(len(option) > 100 for option in options_list):
+                        # Send the poll
+                        poll_message = self.bot.send_poll(
+                            chat_id=message.chat.id,
+                            question=question_text,
+                            options=options_list,
+                            is_anonymous=True,
+                            type="quiz",
+                            correct_option_id=correct_option_id,
+                            open_period=0,
+                            protect_content=False,
+                            explanation=f"{explanation}\nBy:Raafat Sami🥱"
+                        )
+                    except KeyError as e:
+                        print(f"Key error: {e}")
                         continue
-
-                    # Send the poll
-                    poll_message = self.bot.send_poll(
-                        chat_id=message.chat.id,
-                        question=question_text,
-                        options=options_list,
-                        is_anonymous=True,
-                        type="quiz",
-                        correct_option_id=options_list.index(correct_answer),
-                        open_period=None,
-                        protect_content=False,
-                        explanation=explanation
-                    )
-                except KeyError as e:
-                    print(f"Key error in question data: {e}")
-                    continue
-                except Exception as e:
-                    print(f"Error sending poll: {e}")
-                    continue
-
-            # Optionally, send the questions as a PDF or other format
-            self.send_pdf(message.chat.id, {"questions": all_questions})
-
-            # Feedback message
-            feedback_message = self.bot.send_message(
-                message.chat.id,
-                "شكراً لاستخدام البوت! ممكن تقيم الاختبار؟\nتقييمك هيساعدنا نحسن و نطور البوت😃",
-                reply_markup=self.get_feedback_markup()
-            )
+            else:
+                print("Parsed data does not contain expected keys.")
         except Exception as e:
-            print(f"An error occurred during quiz creation: {e}")
-
+            print(f"An error occurred: {e}")
+        
+        # Optionally, send the questions as a PDF
+        self.send_pdf(message.chat.id, parsed_data)
+        
+        # Feedback message
+        feedback_message = self.bot.send_message(
+            message.chat.id,
+            "شكراً لاستخدام البوت! ممكن تقيم الاختبار؟\nتقييمك هيساعدنا نحسن و نطور البوت😃",
+            reply_markup=self.get_feedback_markup()
+        )
     def get_feedback_markup(self):
         # Create an inline keyboard markup with two buttons: Yes and No
         markup = telebot.types.InlineKeyboardMarkup()
