@@ -1,7 +1,7 @@
 import telebot
 import pdfplumber
 from io import BytesIO
-from get_questions import get_combined_data
+from get_questions import get_questions
 from keep_alive import keep_alive
 import time
 from fpdf import FPDF
@@ -165,7 +165,7 @@ class QuizBot:
             self.bot.register_next_step_handler(call.message, self.get_topic_from_pdf)
             
 
-        @self.bot.callback_query_handler(func=lambda call: call.data in ["5", "10", "15", "20"])
+        @self.bot.callback_query_handler(func=lambda call: call.data in ["5", "10", "15", "30"])
         def select_num_questions(call):
             self.NUM_QUESTIONS = call.data
             self.create_quiz(call.message)
@@ -278,10 +278,10 @@ class QuizBot:
         markup = telebot.types.InlineKeyboardMarkup()
         markup.row_width = 3  # Adjust to display 3 buttons per row
         markup.add(
-            telebot.types.InlineKeyboardButton("5", callback_data="5"),
-            telebot.types.InlineKeyboardButton("10", callback_data="10"),
-            telebot.types.InlineKeyboardButton("15", callback_data="15"),
-            telebot.types.InlineKeyboardButton("20", callback_data="20"),
+            telebot.types.InlineKeyboardButton("15", callback_data="5"),
+            telebot.types.InlineKeyboardButton("30", callback_data="10"),
+            telebot.types.InlineKeyboardButton("45", callback_data="15"),
+            telebot.types.InlineKeyboardButton("90", callback_data="30"),
         )
         # Send the message with the buttons
         sent_message = self.bot.send_message(
@@ -294,57 +294,83 @@ class QuizBot:
 
 
  
-        
+            
     def create_quiz(self, message):
         self.bot.delete_message(message.chat.id, message.message_id)
         wait_message = self.bot.send_message(
-            message.chat.id, 
+            message.chat.id,
             "*جارٍ إنشاء الأسئلة* 🫣\n\n"
             "🔹 تأكد من مراجعة الأسئلة بعد الإنشاء.\n"
             "🔹 قد يستغرق الأمر بعض الوقت، يرجى الانتظار.",
-            parse_mode='Markdown')        
+            parse_mode='Markdown')
         loading_animation = self.bot.send_sticker(message.chat.id, "CAACAgIAAxkBAAIU1GYOk5jWvCvtykd7TZkeiFFZRdUYAAIjAAMoD2oUJ1El54wgpAY0BA")
-
-        parsed_data = get_combined_data(self.NUM_QUESTIONS, self.TOPIC)
-    
-        self.bot.delete_message(message.chat.id, wait_message.message_id)
-        self.bot.delete_message(message.chat.id, loading_animation.message_id)
         
+        difficulty_levels = [0, 1, 2]  # Difficulty levels to fetch
+        all_questions = []  # List to accumulate questions from all levels
+
         try:
-            # Assuming parsed_data is a JSON string, you can parse it into a dictionary
-            parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
+            # Loop through difficulty levels and fetch questions
+            for level in difficulty_levels:
+                parsed_data = get_questions(self.TOPIC, self.NUM_QUESTIONS, level)
 
-            if isinstance(parsed_data, dict):  # Ensure parsed_data is a dictionary
-                for question_number, question_data in parsed_data.items():
-                    try:
-                        question_text = question_data["text"]
-                        options = question_data["options"]
-                        correct_answer = question_data["answer"]
-                    except KeyError:
-                        print(question_data)
-                        continue
+                # Parse the response if it's a JSON string
+                parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
 
-                    options_list = [f"{key}. {value}" for key, value in options.items()]
+                if isinstance(parsed_data, dict) and 'questions' in parsed_data:  # Ensure valid structure
+                    all_questions.extend(parsed_data['questions'])  # Add questions to the main list
+                else:
+                    print(f"Invalid response format for difficulty level {level}: {parsed_data}")
 
+            # Remove the loading messages
+            try:
+                self.bot.delete_message(message.chat.id, wait_message.message_id)
+                self.bot.delete_message(message.chat.id, loading_animation.message_id)
+            except Exception as e:
+                print(f"Error deleting messages: {e}")
+            # Process the combined questions
+            for question_data in all_questions:
+                try:
+                    question_text = question_data["question"]
+                    options = question_data["options"]
+                    correct_answer = next(option['option'] for option in options if option['is_correct'])
+                    explanation = question_data.get("explanation", "لا توجد شرح لهذا السؤال.")  # Default explanation
+                    options_list = [option['option'] for option in options]
+
+                    # Skip questions with overly long options
                     if any(len(option) > 100 for option in options_list):
                         continue
 
+                    # Send the poll
                     poll_message = self.bot.send_poll(
                         chat_id=message.chat.id,
                         question=question_text,
                         options=options_list,
                         is_anonymous=True,
                         type="quiz",
-                        correct_option_id=list(options.keys()).index(correct_answer),
-                        open_period=0,
-                        protect_content=False
+                        correct_option_id=options_list.index(correct_answer),
+                        open_period=None,
+                        protect_content=False,
+                        explanation=explanation
                     )
-            else:
-                print("Parsed data is not a dictionary.")
+                except KeyError as e:
+                    print(f"Key error in question data: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Error sending poll: {e}")
+                    continue
+
+            # Optionally, send the questions as a PDF or other format
+            self.send_pdf(message.chat.id, {"questions": all_questions})
+
+            # Feedback message
+            feedback_message = self.bot.send_message(
+                message.chat.id,
+                "شكراً لاستخدام البوت! ممكن تقيم الاختبار؟\nتقييمك هيساعدنا نحسن و نطور البوت😃",
+                reply_markup=self.get_feedback_markup()
+            )
         except Exception as e:
-            print(f"An error occurred: {e}")
-        self.send_pdf(message.chat.id, parsed_data)
-        feedback_message = self.bot.send_message(message.chat.id,"شكراً لاستخدام البوت! ممكن تقيم الاختبار؟\nتقييمك هيساعدنا نحسن و نطور البوت😃",reply_markup=self.get_feedback_markup())
+            print(f"An error occurred during quiz creation: {e}")
+
     def get_feedback_markup(self):
         # Create an inline keyboard markup with two buttons: Yes and No
         markup = telebot.types.InlineKeyboardMarkup()
