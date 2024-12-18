@@ -1,11 +1,11 @@
 import telebot
 import pdfplumber
 from io import BytesIO
-from get_questions import get_questions
+from get_questions import get_combined_data
 from keep_alive import keep_alive
 import time
 from fpdf import FPDF
-
+import json
 class QuizBot:
     def __init__(self, token):
         self.bot = telebot.TeleBot(token)
@@ -165,15 +165,15 @@ class QuizBot:
             self.bot.register_next_step_handler(call.message, self.get_topic_from_pdf)
             
 
-        @self.bot.callback_query_handler(func=lambda call: call.data in ["5", "10", "20", "40", "60", "80"])
+        @self.bot.callback_query_handler(func=lambda call: call.data in ["5", "10", "15", "20"])
         def select_num_questions(call):
             self.NUM_QUESTIONS = call.data
-            self.get_difficulty_level(call.message)
+            self.create_quiz(call.message)
 
         @self.bot.callback_query_handler(func=lambda call: call.data in ["easy", "medium", "hard",'mixed'])
         def select_difficulty_level(call):
             self.DIFF = call.data
-            self.create_quiz(call.message)
+            
             
         @self.bot.callback_query_handler(func=lambda call: call.data in ["feedback_yes", "feedback_no"])
         def handle_feedback(call):
@@ -280,10 +280,8 @@ class QuizBot:
         markup.add(
             telebot.types.InlineKeyboardButton("5", callback_data="5"),
             telebot.types.InlineKeyboardButton("10", callback_data="10"),
+            telebot.types.InlineKeyboardButton("15", callback_data="15"),
             telebot.types.InlineKeyboardButton("20", callback_data="20"),
-            telebot.types.InlineKeyboardButton("40", callback_data="40"),
-            telebot.types.InlineKeyboardButton("60", callback_data="60"),
-            telebot.types.InlineKeyboardButton("80", callback_data="80")
         )
         # Send the message with the buttons
         sent_message = self.bot.send_message(
@@ -295,30 +293,7 @@ class QuizBot:
         )
 
 
-    def get_difficulty_level(self, message):
-        markup = telebot.types.InlineKeyboardMarkup()
-        markup.row_width = 3  # Set the number of buttons per row to 3
-        markup.add(
-            telebot.types.InlineKeyboardButton("سهل😌", callback_data="easy"),
-            telebot.types.InlineKeyboardButton("متوسط🤕", callback_data="medium"),
-            telebot.types.InlineKeyboardButton("صعب😩", callback_data="hard")
-        )
-        # Add the "ميكس" button in a new row
-        markup.add(
-            telebot.types.InlineKeyboardButton("ميكس💀", callback_data="mixed")
-        )
-        
-        self.bot.delete_message(message.chat.id, message.message_id)
-        
-        # Send the message with the buttons
-        self.bot.send_message(
-            message.chat.id, 
-            "اختار مستوى الصعوبة 🏋️‍♂️",  # Added an emoji that represents difficulty (weightlifting)
-            reply_markup=markup, 
-            parse_mode="Markdown"
-        )
-
-        
+ 
         
     def create_quiz(self, message):
         self.bot.delete_message(message.chat.id, message.message_id)
@@ -329,69 +304,17 @@ class QuizBot:
             "🔹 قد يستغرق الأمر بعض الوقت، يرجى الانتظار.",
             parse_mode='Markdown')        
         loading_animation = self.bot.send_sticker(message.chat.id, "CAACAgIAAxkBAAIU1GYOk5jWvCvtykd7TZkeiFFZRdUYAAIjAAMoD2oUJ1El54wgpAY0BA")
+
+        parsed_data = get_combined_data(self.NUM_QUESTIONS, self.TOPIC)
+    
+        self.bot.delete_message(message.chat.id, wait_message.message_id)
+        self.bot.delete_message(message.chat.id, loading_animation.message_id)
         
-        def send_error_message():
-            self.bot.delete_message(message.chat.id, wait_message.message_id)
-            self.bot.delete_message(message.chat.id, loading_animation.message_id)
-            self.bot.send_message(message.chat.id, "حصلت مشكلة أثناء إنشاء الأسئلة. حاول تاني لو سمحت.")
-        
-        if self.DIFF == "mixed":
-            for difficulty in ["easy", "medium", "hard"]:
-                num_questions_per_level = int(self.NUM_QUESTIONS) // 3
-                parsed_data = get_questions(difficulty, num_questions_per_level, self.TOPIC)
-                
-                if not isinstance(parsed_data, dict):
-                    send_error_message()
-                    return
-                
-                try:
-                    self.bot.delete_message(message.chat.id, wait_message.message_id)
-                    self.bot.delete_message(message.chat.id, loading_animation.message_id)
-                except:
-                    pass
-                
-                diff_levels = {
-                    "easy": "سهل",
-                    "medium": "متوسط",
-                    "hard": "صعب"
-                }
-                diff_level = diff_levels.get(difficulty)
-                self.bot.send_message(message.chat.id, f"أسئلة بمستوى صعوبة *{diff_level}*🎉", parse_mode='Markdown')
-                
-                for question_number, question_data in parsed_data.items():
-                    try:
-                        question_text = question_data["text"]
-                        options = question_data["options"]
-                        correct_answer = question_data["answer"]
-                    except KeyError:
-                        continue
-                    
-                    options_list = [f"{key}. {value}" for key, value in options.items()]
-                    
-                    if any(len(option) > 100 for option in options_list):
-                        continue
-                    
-                    poll_message = self.bot.send_poll(
-                        chat_id=message.chat.id,
-                        question=question_text,
-                        options=options_list,
-                        is_anonymous=True,
-                        type="quiz",
-                        correct_option_id=list(options.keys()).index(correct_answer),
-                        open_period=0,
-                        protect_content=False
-                    )
-        else:
-            parsed_data = get_questions(self.DIFF, self.NUM_QUESTIONS, self.TOPIC)
-            
-            if not isinstance(parsed_data, dict):
-                send_error_message()
-                return
-            
-            self.bot.delete_message(message.chat.id, wait_message.message_id)
-            self.bot.delete_message(message.chat.id, loading_animation.message_id)
-            
-            try:
+        try:
+            # Assuming parsed_data is a JSON string, you can parse it into a dictionary
+            parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
+
+            if isinstance(parsed_data, dict):  # Ensure parsed_data is a dictionary
                 for question_number, question_data in parsed_data.items():
                     try:
                         question_text = question_data["text"]
@@ -400,12 +323,12 @@ class QuizBot:
                     except KeyError:
                         print(question_data)
                         continue
-                    
+
                     options_list = [f"{key}. {value}" for key, value in options.items()]
-                    
+
                     if any(len(option) > 100 for option in options_list):
                         continue
-                    
+
                     poll_message = self.bot.send_poll(
                         chat_id=message.chat.id,
                         question=question_text,
@@ -416,8 +339,10 @@ class QuizBot:
                         open_period=0,
                         protect_content=False
                     )
-            except Exception as e:
-                print(f"An error occurred: {e}")
+            else:
+                print("Parsed data is not a dictionary.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
         self.send_pdf(message.chat.id, parsed_data)
         feedback_message = self.bot.send_message(message.chat.id,"شكراً لاستخدام البوت! ممكن تقيم الاختبار؟\nتقييمك هيساعدنا نحسن و نطور البوت😃",reply_markup=self.get_feedback_markup())
     def get_feedback_markup(self):
@@ -451,4 +376,3 @@ if __name__ == "__main__":
             print(f"An error occurred: {e}")
             # You might want to add a delay before retrying to avoid hitting API rate limits
             time.sleep(5)  # 5 seconds delay before retrying
-
