@@ -121,7 +121,7 @@
 #     return university_data
 
 
-def get_questions(topic, num_questions,level):
+def get_questions(topic, num_questions):
     import requests
 
     cookies = {
@@ -158,7 +158,7 @@ def get_questions(topic, num_questions,level):
         'questionType': 'text',
         'language': 'English',
         'level': '5',
-        'difficult': str(level),
+        'difficult': "2",
         'description': '',
     }
 
