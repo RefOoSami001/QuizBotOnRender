@@ -125,12 +125,11 @@ def get_questions(topic, num_questions):
     import requests
 
     cookies = {
-        '__Host-authjs.csrf-token': 'b43829bb48cc966fb662f1aad3b12f849b7488d17181065c541f058ae6ba26b7%7Cdb060345243f170f882808e47d95f106f6bf6768b442c968329f07df350783f4',
-        '_clck': 'jca82s%7C2%7Cfrt%7C0%7C1813',
-        '__Secure-authjs.callback-url': 'https%3A%2F%2Faiquizgen.com%2Fapi%2Fauth%2Fredirect',
-        'user-token': 'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjMzZDk3ZDY0MDczZjRlOWE4NGMxMGQ0ZTBkMmE3NDg1In0.qyTpYICRXaNCr7A4bM90zmVXf7IyKxOQlXXaMBCHlrw',
-        '__Secure-authjs.session-token': 'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiTGw1RGxyRFVpRkdqN3NFdGF5ZjhZajR2dEJhd2lkS0pjMG85UFNVankxRllrSTdmeFd5MGdDbHkzVVpYMHcyTHdXWGRmdjJQc3l3Q1BKME1LYkRkT2cifQ..GEqV6Q59kAC88fcHswKBhA.oEbzljcpnQv_85quxCGxcxPNK4CzoAc5tE6Fcv1T7PpTCBvaOH9aRusNTnUoPNzrYxMxU3KqWdAgeDrRulkvwk_qNa3Yw5TslQJlXmLFSaDMLfDNOoMmGaFSTJJS1qTa1KQ7VjKQPjZAvBuNgawwqlA0UmvJC-iUh-KZcIRCDiwkl90Y_Sy0OFvPL4-gryD3ezNjlhz5W686_jYK3V-AwKbp_AVrIDZrcfP1IFK-cZFdcTFqkkT9aznFogAunyPAj7kfdHkgi37VjQi2zkGWkHICmahdwg_hdlRAEjrmI1M-M5d-HAnj2zCujWzbfS1Y5XZd31OVFF96Nzr-momjbGTfKNPOxM1RwtjZi_FXqQGJxRd-H8rTApiMVtt_rtpLibOoxsEEMp2I2bl0HIobFxWtCID0kO5xK4e5pwIkZ8B9nvFKRbHAceghD10iVIFi.oWD9WV4InXUJBqQ1i3wA9dq8XADKs-A4Xb0K_-6MpDU',
-        '_clsk': '1cn0g9e%7C1734528570430%7C4%7C1%7Ce.clarity.ms%2Fcollect',
+        '_clck': 'jca82s%7C2%7Cfru%7C0%7C1813',
+        '__Host-authjs.csrf-token': '23708f9aa1037584ffa441c1579defbdf2c2e3b02b4a9041c3c09ab95421bfd4%7Ca4b1588482d89bb69c5051ee35d6c53d046bc7a348e217354c3479e676f11524',
+        '__Secure-authjs.callback-url': 'https%3A%2F%2Faiquizgen.com',
+        '_clsk': '1bb0pts%7C1734645392996%7C2%7C1%7Ce.clarity.ms%2Fcollect',
+        '__Secure-authjs.session-token': 'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiTGw1RGxyRFVpRkdqN3NFdGF5ZjhZajR2dEJhd2lkS0pjMG85UFNVankxRllrSTdmeFd5MGdDbHkzVVpYMHcyTHdXWGRmdjJQc3l3Q1BKME1LYkRkT2cifQ..bTn0Hl212W8yPhpylQCf2A.-Fo0altdJEieG1LuwT43eKX2duwEHyFnz5uQAnipL2HJF4pdHSQ0-v8EeZ7YB8emCu49nTdEQToUbHv3nyZJmvVq7tPqHopQO-x_UgY79PBEAEWekBVgZmtCguTLUq0BwBiJbfdWccyPp4NgGcPF73Nzy-F8E5kVLwt2olLGRTw39OA3dz16AeMGRb6r1UOVzgYRktue0_70ytDnwuCq5adMj5pr_SQf4ZBPwumXV8xmXOQpn585vxIcuoDGq1dN89XVhwqe-co5iFmiiDtwtLN3gTTzoN9joQvDzRfVGBv0zUh0Xphm8wd7PejGbnWD90ZICvlnVQF0r9gJ37g1LWqCef7xLaaTmJCZ23Q_cf9d5d1t58wecpHyeFJq_VPXNQ-IrMvt4ctTuKfSmnBnraJCW_FAix5ka__U_sfooPgspZ9BtKC7wGZfdYOe6IJt.Gmh3o4eZ06jDJTYBJng3CntqrPpMffec8ZSLnCuqKwM',
     }
 
     headers = {
