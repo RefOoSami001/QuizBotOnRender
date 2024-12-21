@@ -422,7 +422,6 @@ class QuizBot:
                         correct_option_text = f"{correct_answer}) {options[correct_answer]}"
 
                         # Shuffle options
-                        random.shuffle(options_list)
                         correct_option_id = options_list.index(correct_option_text)
 
                         # Skip questions with overly long options
