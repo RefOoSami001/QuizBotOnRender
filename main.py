@@ -349,7 +349,9 @@ class QuizBot:
                         correct_answer = question_data["correctAnswer"]
                         explanation = question_data.get("explanation", "لا يوجد شرح لهذا السؤال.")
 
-                        correct_option_id = options_list.index(correct_answer)
+                        shuffled_options = options_list[:]
+                        random.shuffle(shuffled_options)
+                        correct_option_id = shuffled_options.index(correct_answer)
 
                         # Skip questions with overly long options
                         if any(len(option) > 100 for option in options_list):
