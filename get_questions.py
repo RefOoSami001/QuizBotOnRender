@@ -125,41 +125,41 @@ def get_questions(topic, num_questions):
     import requests
 
     cookies = {
-        '_clck': 'jca82s%7C2%7Cfru%7C0%7C1813',
-        '__Host-authjs.csrf-token': '23708f9aa1037584ffa441c1579defbdf2c2e3b02b4a9041c3c09ab95421bfd4%7Ca4b1588482d89bb69c5051ee35d6c53d046bc7a348e217354c3479e676f11524',
-        '__Secure-authjs.callback-url': 'https%3A%2F%2Faiquizgen.com',
-        '_clsk': '1bb0pts%7C1734645392996%7C2%7C1%7Ce.clarity.ms%2Fcollect',
-        '__Secure-authjs.session-token': 'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiTGw1RGxyRFVpRkdqN3NFdGF5ZjhZajR2dEJhd2lkS0pjMG85UFNVankxRllrSTdmeFd5MGdDbHkzVVpYMHcyTHdXWGRmdjJQc3l3Q1BKME1LYkRkT2cifQ..bTn0Hl212W8yPhpylQCf2A.-Fo0altdJEieG1LuwT43eKX2duwEHyFnz5uQAnipL2HJF4pdHSQ0-v8EeZ7YB8emCu49nTdEQToUbHv3nyZJmvVq7tPqHopQO-x_UgY79PBEAEWekBVgZmtCguTLUq0BwBiJbfdWccyPp4NgGcPF73Nzy-F8E5kVLwt2olLGRTw39OA3dz16AeMGRb6r1UOVzgYRktue0_70ytDnwuCq5adMj5pr_SQf4ZBPwumXV8xmXOQpn585vxIcuoDGq1dN89XVhwqe-co5iFmiiDtwtLN3gTTzoN9joQvDzRfVGBv0zUh0Xphm8wd7PejGbnWD90ZICvlnVQF0r9gJ37g1LWqCef7xLaaTmJCZ23Q_cf9d5d1t58wecpHyeFJq_VPXNQ-IrMvt4ctTuKfSmnBnraJCW_FAix5ka__U_sfooPgspZ9BtKC7wGZfdYOe6IJt.Gmh3o4eZ06jDJTYBJng3CntqrPpMffec8ZSLnCuqKwM',
+        'AMP_MKTG_70a5be3710': 'JTdCJTdE',
+        'AMP_70a5be3710': 'JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJhMzA0ODk0OS05MWIwLTQ1OTMtYjU5MC04OTQ1NThiOWFiMTIlMjIlMkMlMjJzZXNzaW9uSWQlMjIlM0ExNzM0ODAxMjg3NDc0JTJDJTIyb3B0T3V0JTIyJTNBZmFsc2UlMkMlMjJsYXN0RXZlbnRUaW1lJTIyJTNBMTczNDgwMTI4NzQ3OSUyQyUyMmxhc3RFdmVudElkJTIyJTNBMiU3RA==',
+        '__client_uat': '0',
+        '__client_uat_wYOPO35R': '0',
+        'crisp-client%2Fsession%2Ffaab0820-f408-4327-915b-bc17f2332d39': 'session_92021fc7-4cf5-4b64-b5fe-82d6f3e1874c',
+        '__stripe_mid': '0d785786-3f51-48e0-aa0a-cdb754b7a83a4809ce',
+        '__stripe_sid': '9454cd36-334d-4ee8-a53e-faa4e76a9b170c32eb',
     }
 
     headers = {
         'accept': '*/*',
         'accept-language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
+        'baggage': 'sentry-environment=vercel-production,sentry-release=69b2b1c3f422dff6472132d59e8581489aa8427a,sentry-public_key=f6bbb7b197a2a7e09bc25634f533bdeb,sentry-trace_id=8d0baca7f0634408bfce0e8857294d98',
         'content-type': 'application/json',
-        # 'cookie': '__Host-authjs.csrf-token=b43829bb48cc966fb662f1aad3b12f849b7488d17181065c541f058ae6ba26b7%7Cdb060345243f170f882808e47d95f106f6bf6768b442c968329f07df350783f4; _clck=jca82s%7C2%7Cfrt%7C0%7C1813; __Secure-authjs.callback-url=https%3A%2F%2Faiquizgen.com%2Fapi%2Fauth%2Fredirect; user-token=eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjMzZDk3ZDY0MDczZjRlOWE4NGMxMGQ0ZTBkMmE3NDg1In0.qyTpYICRXaNCr7A4bM90zmVXf7IyKxOQlXXaMBCHlrw; __Secure-authjs.session-token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiTGw1RGxyRFVpRkdqN3NFdGF5ZjhZajR2dEJhd2lkS0pjMG85UFNVankxRllrSTdmeFd5MGdDbHkzVVpYMHcyTHdXWGRmdjJQc3l3Q1BKME1LYkRkT2cifQ..GEqV6Q59kAC88fcHswKBhA.oEbzljcpnQv_85quxCGxcxPNK4CzoAc5tE6Fcv1T7PpTCBvaOH9aRusNTnUoPNzrYxMxU3KqWdAgeDrRulkvwk_qNa3Yw5TslQJlXmLFSaDMLfDNOoMmGaFSTJJS1qTa1KQ7VjKQPjZAvBuNgawwqlA0UmvJC-iUh-KZcIRCDiwkl90Y_Sy0OFvPL4-gryD3ezNjlhz5W686_jYK3V-AwKbp_AVrIDZrcfP1IFK-cZFdcTFqkkT9aznFogAunyPAj7kfdHkgi37VjQi2zkGWkHICmahdwg_hdlRAEjrmI1M-M5d-HAnj2zCujWzbfS1Y5XZd31OVFF96Nzr-momjbGTfKNPOxM1RwtjZi_FXqQGJxRd-H8rTApiMVtt_rtpLibOoxsEEMp2I2bl0HIobFxWtCID0kO5xK4e5pwIkZ8B9nvFKRbHAceghD10iVIFi.oWD9WV4InXUJBqQ1i3wA9dq8XADKs-A4Xb0K_-6MpDU; _clsk=1cn0g9e%7C1734528570430%7C4%7C1%7Ce.clarity.ms%2Fcollect',
-        'origin': 'https://aiquizgen.com',
+        # 'cookie': 'AMP_MKTG_70a5be3710=JTdCJTdE; AMP_70a5be3710=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJhMzA0ODk0OS05MWIwLTQ1OTMtYjU5MC04OTQ1NThiOWFiMTIlMjIlMkMlMjJzZXNzaW9uSWQlMjIlM0ExNzM0ODAxMjg3NDc0JTJDJTIyb3B0T3V0JTIyJTNBZmFsc2UlMkMlMjJsYXN0RXZlbnRUaW1lJTIyJTNBMTczNDgwMTI4NzQ3OSUyQyUyMmxhc3RFdmVudElkJTIyJTNBMiU3RA==; __client_uat=0; __client_uat_wYOPO35R=0; crisp-client%2Fsession%2Ffaab0820-f408-4327-915b-bc17f2332d39=session_92021fc7-4cf5-4b64-b5fe-82d6f3e1874c; __stripe_mid=0d785786-3f51-48e0-aa0a-cdb754b7a83a4809ce; __stripe_sid=9454cd36-334d-4ee8-a53e-faa4e76a9b170c32eb',
+        'origin': 'https://www.heuristi.ca',
         'priority': 'u=1, i',
-        'referer': 'https://aiquizgen.com/dashboard/generator/mcq?type=text',
+        'referer': 'https://www.heuristi.ca/tools/free-ai-quiz-generator',
         'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
         'sec-fetch-dest': 'empty',
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-origin',
+        'sentry-trace': '8d0baca7f0634408bfce0e8857294d98-8ca3ef1a40dafdf7',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
     }
 
     json_data = {
-        'prompt': topic,
-        'id': 'd0e54eac4a8f49599263207935ce8703',
-        'questionNumber': str(num_questions),
-        'optionsNumber': '4',
-        'questionType': 'text',
+        'operation': 'quiz-from-text',
+        'input': topic,
         'language': 'English',
-        'level': '5',
-        'difficult': "2",
-        'description': '',
+        'count': str(num_questions),
     }
 
-    response = requests.post('https://aiquizgen.com/api/v1/quiz/mcq', cookies=cookies, headers=headers, json=json_data)
+    response = requests.post('https://www.heuristi.ca/api/free-flashcard-generator',cookies=cookies headers=headers, json=json_data)
     return response.json()
+
