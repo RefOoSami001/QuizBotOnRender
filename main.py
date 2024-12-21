@@ -190,7 +190,7 @@ class QuizBot:
             self.bot.register_next_step_handler(call.message, self.get_topic_from_pdf)
             
 
-        @self.bot.callback_query_handler(func=lambda call: call.data in ["0", "1", "1"])
+        @self.bot.callback_query_handler(func=lambda call: call.data in ["0", "1", "2"])
         def select_num_questions(call):
             self.NUM_QUESTIONS = call.data
             self.create_quiz(call.message)
