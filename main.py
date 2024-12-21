@@ -349,22 +349,26 @@ class QuizBot:
                         correct_answer = question_data["correctAnswer"]
                         explanation = question_data.get("explanation", "لا يوجد شرح لهذا السؤال.")
 
-                        correct_option_id = options_list.index(correct_answer)
+                        # Shuffle the options and determine the new correct option index
+                        shuffled_options = options_list[:]
+                        random.shuffle(shuffled_options)
+                        correct_option_id = shuffled_options.index(correct_answer)  # Recalculate index after shuffle
+
                         # Skip questions with overly long options
-                        if any(len(option) > 100 for option in options_list):
+                        if any(len(option) > 100 for option in shuffled_options):
                             continue
 
                         # Send the poll
                         poll_message = self.bot.send_poll(
                             chat_id=message.chat.id,
                             question=question_text,
-                            options=options_list,
+                            options=shuffled_options,
                             is_anonymous=True,
                             type="quiz",
                             correct_option_id=correct_option_id,
                             open_period=0,
                             protect_content=False,
-                            explanation=f"{explanation}\nBy:Raafat Sami🫡"
+                            explanation=f"{explanation}\nBy:Raafat Sami🥱"
                         )
                     except KeyError as e:
                         print(f"Key error: {e}")
@@ -383,7 +387,6 @@ class QuizBot:
             "شكراً لاستخدام البوت! ممكن تقيم الاختبار؟\nتقييمك هيساعدنا نحسن و نطور البوت😃",
             reply_markup=self.get_feedback_markup()
         )
-
     def get_feedback_markup(self):
         # Create an inline keyboard markup with two buttons: Yes and No
         markup = telebot.types.InlineKeyboardMarkup()
