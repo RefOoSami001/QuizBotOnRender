@@ -364,7 +364,7 @@ class QuizBot:
                             correct_option_id=correct_option_id,
                             open_period=0,
                             protect_content=False,
-                            explanation=f"{explanation}\nBy:Raafat Sami🥱"
+                            explanation=f"{explanation}\nBy:Raafat Sami🫡"
                         )
                     except KeyError as e:
                         print(f"Key error: {e}")
