@@ -160,6 +160,6 @@ def get_questions(topic, num_questions):
         'count': str(num_questions),
     }
 
-    response = requests.post('https://www.heuristi.ca/api/free-flashcard-generator',cookies=cookies headers=headers, json=json_data)
+    response = requests.post('https://www.heuristi.ca/api/free-flashcard-generator',cookies=cookies, headers=headers, json=json_data)
     return response.json()
 
