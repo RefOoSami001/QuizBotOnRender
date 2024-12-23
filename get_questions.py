@@ -121,7 +121,7 @@
 #     return university_data
 
 
-def get_questions(topic, num_questions):
+def get_questions(topic, num_questions, lang):
     import requests
 
     cookies = {
@@ -156,10 +156,9 @@ def get_questions(topic, num_questions):
     json_data = {
         'operation': 'quiz-from-text',
         'input': topic,
-        'language': 'English',
+        'language': lang,
         'count': str(num_questions),
     }
 
-    response = requests.post('https://www.heuristi.ca/api/free-flashcard-generator',cookies=cookies, headers=headers, json=json_data)
+    response = requests.post('https://www.heuristi.ca/api/free-flashcard-generator',cookies=cookies ,headers=headers, json=json_data)
     return response.json()
-
