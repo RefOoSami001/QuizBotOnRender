@@ -191,23 +191,32 @@ class QuizBot:
             if call.data == "feedback_yes":
                 self.bot.send_message(chat_id, "متشكرين جداً على التقييم! 🌟")
                 self.bot.send_sticker(chat_id, "CAACAgIAAxkBAAIVemYUNaMv-VaGZU18xrZTh-_z3xTIAAIEAQACVp29Ct4E0XpmZvdsNAQ")
-                self.bot.send_message(854578633, f"المستخدم {chat_id} قيم البوت بانه جيد")
-            elif call.data == "feedback_no":
+                self.bot.send_message(854578633, f"المستخدم {chat_id} قيم البوت بانه جيد")                
+            if call.data == "feedback_no":
                 # Send a contact button for the user to contact support
                 contact_button = telebot.types.InlineKeyboardMarkup()
                 contact_button.add(telebot.types.InlineKeyboardButton("تواصل بالدعم💁", url="https://t.me/RefOoSami"))
-
-                self.bot.send_message(
+                msg = self.bot.send_message(
                     chat_id,
-                    "احنا آسفين إنك مش مبسوط. لو عندك أي ملاحظات أو اقتراحات، متترددش تشاركها معانا. 🙏",
+                    "احنا آسفين إنك مش مبسوط. لو عندك أي ملاحظات أو اقتراحات، متترددش تشاركها معانا. 🙏\n\n"
+                    "اكتب سبب التقييم وهنحاول نصلح المشكلة:",
                     reply_markup=contact_button
                 )
                 self.bot.send_sticker(chat_id, "CAACAgIAAxkBAAIVfGYUNnYBOTnkuw982--5-LHV74ItAALzAANWnb0KahvrxMf6lv40BA")
                 self.bot.send_message(854578633, f"المستخدم {chat_id} قيم البوت بانه غير مقبول")
+                self.bot.register_next_step_handler(msg, self.handle_user_feedback)
                 
                 
         self.bot.polling()
-
+    def handle_user_feedback(self, message):
+        self.bot.send_message(
+            854578633,
+            f"ملاحظات من المستخدم {message.chat.id}:\n{message.text}"
+        )
+        self.bot.send_message(
+            message.chat.id,
+            "شكراً لملاحظاتك،! 🙏"
+        )
     def handle_lecture_input(self, message):
         chat_id = message.chat.id
         # Check if the input is text or a file
@@ -314,7 +323,7 @@ class QuizBot:
         self.bot.delete_message(call.message.chat.id, call.message.message_id)
         # Send a message asking for language choice
         markup = telebot.types.InlineKeyboardMarkup()
-        markup.row_width = 1  # Two options per row
+        markup.row_width = 2  # Two options per row
         markup.add(
             telebot.types.InlineKeyboardButton("عربي", callback_data="Arabic"),
             telebot.types.InlineKeyboardButton("انجليزي", callback_data="English"),
@@ -333,9 +342,9 @@ class QuizBot:
         self.bot.delete_message(message.chat.id, message.message_id)
         wait_message = self.bot.send_message(
             message.chat.id,
-            "*جارٍ إنشاء الأسئلة* 🫣\n\n"
-            "🔹 تأكد من مراجعة الأسئلة بعد الإنشاء.\n"
-            "🔹 قد يستغرق الأمر بعض الوقت، يرجى الانتظار.",
+            "*جارٍ إنشاء الأسئلة* 🤾\n\n"
+            "📍 تأكد من مراجعة الأسئلة بعد الإنشاء 🫵.\n"
+            "📍 قد يستغرق الأمر بعض الوقت، يرجى الانتظار 🕞.",
             parse_mode='Markdown')        
         loading_animation = self.bot.send_sticker(message.chat.id, "CAACAgIAAxkBAAIU1GYOk5jWvCvtykd7TZkeiFFZRdUYAAIjAAMoD2oUJ1El54wgpAY0BA")
 
@@ -347,6 +356,7 @@ class QuizBot:
         try:
             # Check if parsed_data is a string and parse it to a dictionary
             parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
+            print(parsed_data)
 
             # Verify the new format and proceed
             if isinstance(parsed_data, dict) and 'data' in parsed_data:
@@ -370,14 +380,14 @@ class QuizBot:
                         # Send the poll
                         poll_message = self.bot.send_poll(
                             chat_id=message.chat.id,
-                            question=question_text,
-                            options=shuffled_options,
+                            question=question_text[:300],  # Limit to 300 characters (Telegram limit)
+                            options=[opt[:100] for opt in shuffled_options],  # Limit options length
                             is_anonymous=True,
                             type="quiz",
                             correct_option_id=correct_option_id,
+                            explanation=f"{explanation[:188]} - By:RefOo🫡",  # Limit explanation length
                             open_period=0,
                             protect_content=False,
-                            explanation=f"{explanation}\nBy:Raafat Sami🥱"
                         )
                     except KeyError as e:
                         print(f"Key error: {e}")
@@ -413,9 +423,8 @@ class QuizBot:
         last_name = user.last_name
         user_id = user.id
         username = user.username
-        user_details = f"\nاسم المستخدم: @{username}\nالاسم الأول: {first_name}\nالاسم الأخير: {last_name}\nالرقم التعريفي: {user_id}"
+        user_details = f"مستخدم جديد بدأ يستخدم البوت:\n\nاسم المستخدم: @{username}\nالاسم الأول: {first_name}\nالاسم الأخير: {last_name}\nالرقم التعريفي: {user_id}"
         self.bot.send_message(chat_id, user_details)
-        
         
 if __name__ == "__main__":
     keep_alive()
