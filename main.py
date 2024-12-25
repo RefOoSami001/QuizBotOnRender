@@ -356,7 +356,6 @@ class QuizBot:
         try:
             # Check if parsed_data is a string and parse it to a dictionary
             parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
-            print(parsed_data)
 
             # Verify the new format and proceed
             if isinstance(parsed_data, dict) and 'data' in parsed_data:
@@ -371,12 +370,13 @@ class QuizBot:
                         # Shuffle the options and determine the new correct option index
                         shuffled_options = options_list[:]
                         random.shuffle(shuffled_options)
-                        correct_option_id = shuffled_options.index(correct_answer)  # Recalculate index after shuffle
-
-                        # Skip questions with overly long options
-                        if any(len(option) > 100 for option in shuffled_options):
+                        # Attempt to find the index of the correct answer in the shuffled options
+                        try:
+                            correct_option_id = shuffled_options.index(correct_answer)  # Recalculate index after shuffle
+                        except ValueError as e:
+                            # Skip the question if the correct answer is not in the options
+                            print(f"Skipping question due to error: {e}")
                             continue
-
                         # Send the poll
                         poll_message = self.bot.send_poll(
                             chat_id=message.chat.id,
@@ -425,6 +425,8 @@ class QuizBot:
         username = user.username
         user_details = f"مستخدم جديد بدأ يستخدم البوت:\n\nاسم المستخدم: @{username}\nالاسم الأول: {first_name}\nالاسم الأخير: {last_name}\nالرقم التعريفي: {user_id}"
         self.bot.send_message(chat_id, user_details)
+        
+    
         
 if __name__ == "__main__":
     keep_alive()
