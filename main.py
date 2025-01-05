@@ -21,7 +21,7 @@ def extract_quiz_data(quiz_url):
     """Extract quiz data from the HTML DOM of the quiz page."""
     try:
         # Fetch the quiz page
-        response = requests.get(f"https://refooquizmaker.koyeb.app/quiz/{quiz_url}")
+        response = requests.get(f"https://reooquizbot.onrender.com/{quiz_url}")
         response.raise_for_status()  # Raise an error for bad status codes
 
         # Parse the HTML content
