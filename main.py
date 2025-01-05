@@ -117,8 +117,8 @@ class QuizBot:
             markup = telebot.types.InlineKeyboardMarkup(row_width=2)
 
             # Buttons in new order with updated text
-            app_button = telebot.types.InlineKeyboardButton("التطبيق📱", 
-                                                            url="https://www.mediafire.com/file/qqu7v8v6ufjh43o/RefOo+Quiz+V1.0.apk/file")
+            app_button = telebot.types.InlineKeyboardButton("الموقع🌍", 
+                                                            url="https://reooquizbot.onrender.com/")
             help_button = telebot.types.InlineKeyboardButton("مساعدة🤝", callback_data="help")
             contact_button = telebot.types.InlineKeyboardButton("تواصل📞", url="https://t.me/RefOoSami")
             start_quiz_button = telebot.types.InlineKeyboardButton("إنشاء اختبار🧠", callback_data="start_quiz")
