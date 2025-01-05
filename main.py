@@ -57,7 +57,7 @@ def send_welcome(message):
     markup = telebot.types.InlineKeyboardMarkup()
     website_button = telebot.types.InlineKeyboardButton(
         text="زيارة الموقع 🌍",
-        url="https://refooquizmaker.koyeb.app"
+        url="https://reooquizbot.onrender.com/"
     )
         # Create a button to share contact
     contact_button = telebot.types.InlineKeyboardButton(
@@ -128,7 +128,7 @@ def handle_quiz_link(message):
         markup = telebot.types.InlineKeyboardMarkup()
         website_button = telebot.types.InlineKeyboardButton(
             text="زيارة الموقع 🌍",
-            url="https://refooquizmaker.koyeb.app"
+            url="https://reooquizbot.onrender.com/"
         )
         markup.add(website_button)
         bot.reply_to(
