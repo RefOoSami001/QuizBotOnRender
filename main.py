@@ -21,7 +21,7 @@ def extract_quiz_data(quiz_url):
     """Extract quiz data from the HTML DOM of the quiz page."""
     try:
         # Fetch the quiz page
-        response = requests.get(f"https://reooquizbot.onrender.com/{quiz_url}")
+        response = requests.get(f"https://reooquizbot.onrender.com/quiz/{quiz_url}")
         response.raise_for_status()  # Raise an error for bad status codes
 
         # Parse the HTML content
@@ -112,18 +112,19 @@ def handle_quiz_link(message):
             question_text = question['questionText']
             options = question['answerOptions']
             correct_option_id = options.index(question['correctAnswer'])
-
-            # Send the poll
-            bot.send_poll(
-                chat_id=message.chat.id,
-                question=question_text,
-                options=options,
-                type="quiz",
-                correct_option_id=correct_option_id,
-                is_anonymous=False,
-                explanation=f"{question.get('explanation', '')}-RefOo🥱"
-            )
-
+            try:
+                # Send the poll
+                bot.send_poll(
+                    chat_id=message.chat.id,
+                    question=question_text,
+                    options=options,
+                    type="quiz",
+                    correct_option_id=correct_option_id,
+                    is_anonymous=False,
+                    explanation=f"{question.get('explanation', '')}-RefOo🥱"
+                )
+            except:
+                pass
         # Send a "thank you" message
         markup = telebot.types.InlineKeyboardMarkup()
         website_button = telebot.types.InlineKeyboardButton(
