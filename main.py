@@ -120,7 +120,7 @@ def handle_quiz_link(message):
                     options=options,
                     type="quiz",
                     correct_option_id=correct_option_id,
-                    is_anonymous=False,
+                    is_anonymous=True,
                     explanation=f"{question.get('explanation', '')}-RefOo🥱"
                 )
             except:
