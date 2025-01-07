@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 import json
 import re
 from keep_alive import keep_alive
-
+import random
 # Replace with your bot token
-TELEGRAM_BOT_TOKEN = "6982141096:AAFpEspslCkO0KWNbONnmWjUU_87jib__g8"
+TELEGRAM_BOT_TOKEN = "6893223743:AAGreuO7BRrhRcaOj8CSUKvZG1AQk-C048E"
 
 # Initialize the bot
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
@@ -111,20 +111,27 @@ def handle_quiz_link(message):
         for question in quiz_data:
             question_text = question['questionText']
             options = question['answerOptions']
-            correct_option_id = options.index(question['correctAnswer'])
+            correct_answer = question['correctAnswer']
+
+            # Shuffle the options and get the new index of the correct answer
+            shuffled_options = options.copy()
+            random.shuffle(shuffled_options)
+            correct_option_id = shuffled_options.index(correct_answer)
+
             try:
                 # Send the poll
                 bot.send_poll(
                     chat_id=message.chat.id,
                     question=question_text,
-                    options=options,
+                    options=shuffled_options,
                     type="quiz",
                     correct_option_id=correct_option_id,
                     is_anonymous=True,
                     explanation=f"{question.get('explanation', '')}-RefOo🥱"
                 )
-            except:
-                pass
+            except Exception as e:
+                print(f"Error sending poll: {e}")
+
         # Send a "thank you" message
         markup = telebot.types.InlineKeyboardMarkup()
         website_button = telebot.types.InlineKeyboardButton(
@@ -147,7 +154,6 @@ def handle_quiz_link(message):
             message_id=processing_message.message_id,
             text=f"❌ حدث خطأ أثناء معالجة طلبك: {str(e)}"
         )
-
 if __name__ == "__main__":
     keep_alive()
     
