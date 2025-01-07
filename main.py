@@ -6,7 +6,7 @@ import re
 from keep_alive import keep_alive
 import random
 # Replace with your bot token
-TELEGRAM_BOT_TOKEN = "6893223743:AAGreuO7BRrhRcaOj8CSUKvZG1AQk-C048E"
+TELEGRAM_BOT_TOKEN = "6982141096:AAFpEspslCkO0KWNbONnmWjUU_87jib__g8"
 
 # Initialize the bot
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
