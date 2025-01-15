@@ -6,6 +6,7 @@ import time
 import random
 from fpdf import FPDF
 import json
+import re
 def parse_quiz_text(quiz_text):
     import re
     
@@ -183,7 +184,7 @@ class QuizBot:
             markup = telebot.types.InlineKeyboardMarkup(row_width=2)
 
             # Buttons in new order with updated text
-            app_button = telebot.types.InlineKeyboardButton("الموقع📱", 
+            app_button = telebot.types.InlineKeyboardButton("الموقع", 
                                                             url="https://refooquizmaker.koyeb.app/")
             help_button = telebot.types.InlineKeyboardButton("مساعدة🤝", callback_data="help")
             contact_button = telebot.types.InlineKeyboardButton("تواصل📞", url="https://t.me/RefOoSami")
@@ -432,7 +433,7 @@ class QuizBot:
                         poll_message = self.bot.send_poll(
                             chat_id=message.chat.id,
                             question=question_text,
-                            options=options_list,
+                            options=[re.sub(r'^[a-zA-Z]\)\s*', '', option) for option in options_list],  # Remove prefixes
                             is_anonymous=True,
                             type="quiz",
                             correct_option_id=correct_option_id,
@@ -474,8 +475,6 @@ class QuizBot:
         user_details = f"\nاسم المستخدم: @{username}\nالاسم الأول: {first_name}\nالاسم الأخير: {last_name}\nالرقم التعريفي: {user_id}"
         self.bot.send_message(chat_id, user_details)
         
-    
-
     
 if __name__ == "__main__":
     keep_alive()
