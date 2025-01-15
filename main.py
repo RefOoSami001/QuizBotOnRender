@@ -1,18 +1,93 @@
 import telebot
 import pdfplumber
 from io import BytesIO
-from get_questions import get_questions
 from keep_alive import keep_alive
 import time
 import random
 from fpdf import FPDF
 import json
+def parse_quiz_text(quiz_text):
+    import re
+    
+    # Remove any unnecessary parts (like title or any unwanted text)
+    quiz_text = re.sub(r'#.*\n', '', quiz_text)  # Remove quiz title
+    quiz_data = {}
+
+    # Split the input into questions and options
+    questions = re.findall(r'\*\*(\d+)\. (.*?)\*\*\s*(.*?)(?=\*\*|$)', quiz_text, re.DOTALL)
+
+    for question in questions:
+        question_number = question[0]
+        question_text = question[1].strip()
+        options_text = question[2].strip().splitlines()
+
+        options = {}
+        for option in options_text:
+            match = re.match(r'([a-d])\)\s*(.*)', option.strip())  # Changed to use ')' instead of '.' 
+            if match:
+                options[match.group(1)] = match.group(2).strip()
+
+        quiz_data[int(question_number)] = {
+            "text": question_text,
+            "options": options,
+            "answer": ""  # Placeholder for the answer
+        }
+
+    # Extract the answer key section
+    answer_key_section = re.search(r'Answers?:\s*(.*)', quiz_text, re.DOTALL)
+    if answer_key_section:
+        answer_key_text = answer_key_section.group(1).strip()
+        answer_key_lines = answer_key_text.splitlines()
+
+        for line in answer_key_lines:
+            match = re.match(r'(\d+)\.\s*([a-d])', line.strip())
+            if match:
+                question_number = int(match.group(1))
+                answer = match.group(2)
+                if question_number in quiz_data:
+                    quiz_data[question_number]["answer"] = answer
+
+    return quiz_data
+
+def get_questions(topic, num_questions):
+    import requests
+    import json
+    headers = {
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
+        'content-type': 'application/json',
+        'origin': 'https://app.kangaroos.ai',
+        'priority': 'u=1, i',
+        'referer': 'https://app.kangaroos.ai/',
+        'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'cross-site',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    }
+
+    json_data = {
+        'topic': topic,
+        'education_level': '18+',
+        'number_of_questions':num_questions,
+    }
+
+    response = requests.post('https://kangroos-ai-dqhgks3gba-uc.a.run.app/mcq', headers=headers, json=json_data)
+    print(response.json()['output']['text'])
+    parsed_data = parse_quiz_text(response.json()['output']['text'])
+
+    # Convert the parsed data to JSON
+    quiz_json = json.dumps(parsed_data, indent=4)
+    data = quiz_json
+    return data
 class QuizBot:
     def __init__(self, token):
         self.bot = telebot.TeleBot(token)
         self.TOPIC = None
         self.NUM_QUESTIONS = None
-        self.lang = "Arabic"
+        self.DIFF = None
 
 
     def send_pdf(self, chat_id, questions_data):
@@ -20,68 +95,59 @@ class QuizBot:
             # Create the PDF object
             pdf = FPDF()
             pdf.add_page()
+            pdf.set_font("Arial", size=12)
 
-            # Set the default font to Arial (standard font)
-            pdf.set_font('Arial', '', 12)
-
-            # Add the title
-            title = "Generated Quiz"  # Default title
-            if isinstance(questions_data, dict) and questions_data.get('title'):
-                title = questions_data['title']
+            # Add the title (assuming you want to use a title, otherwise default to 'Generated Quiz')
+            title = "Generated Quiz"
             pdf.cell(200, 10, txt=title, ln=True, align='C')
             pdf.ln(10)
 
-            # Access the list of questions
-            questions = questions_data.get('data', [])
-            for i, question_data in enumerate(questions, start=1):
-                # Extract question and options
-                question_text = question_data.get('questionText', 'No question text provided')
-                options = question_data.get('answerOptions', [])
-                correct_answer = question_data.get('correctAnswer', 'No correct answer')
-                explanation = question_data.get('explanation', 'No explanation provided')
-
-                # Write the question (supports Arabic characters if input correctly encoded)
-                pdf.set_font('Arial', 'B', 12)
-                pdf.multi_cell(0, 10, f"{i}. {question_text}")  # Use multi_cell for wrapping text
-                pdf.set_font('Arial', '', 12)
+            # Iterate over each question in the dictionary
+            for i, (question_id, question_data) in enumerate(questions_data.items(), start=1):
+                question_text = question_data.get('text', 'No question text provided')
+                options = question_data.get('options', {})
+                correct_answer_key = question_data.get('answer', '')
 
                 # Shuffle the options to randomize their order
-                shuffled_options = options[:]
-                random.shuffle(shuffled_options)
+                options_list = [f"{key}) {value}" for key, value in options.items()]
+
+                # Write the question
+                pdf.set_font("Arial", style="B", size=12)
+                pdf.cell(0, 10, f"{i}. {question_text}", ln=True)
+                pdf.set_font("Arial", size=12)
 
                 # Write the options
-                for option in shuffled_options:
-                    if option == correct_answer:
-                        # Correct answer: Green and Bold
-                        pdf.set_text_color(0, 128, 0)  # Green color
-                        pdf.set_font('Arial', 'B', 12)  # Bold
+                correct_option_text = f"{correct_answer_key}) {options.get(correct_answer_key, '')}"
+                for opt in options_list:
+                    # Highlight the correct option
+                    if opt == correct_option_text:
+                        pdf.set_text_color(0, 128, 0)  # Green for correct answer
+                        pdf.set_font("Arial", style="B", size=12)  # Bold for correct answer
                     else:
-                        # Other answers: Black
-                        pdf.set_text_color(0, 0, 0)  # Black color
-                        pdf.set_font('Arial', '', 12)  # Regular font
+                        pdf.set_text_color(0, 0, 0)  # Black for other options
+                        pdf.set_font("Arial", size=12)  # Regular font for other options
 
-                    pdf.multi_cell(0, 10, f"   - {option}")  # Use multi_cell to handle long options
+                    pdf.cell(0, 10, f"   - {opt}", ln=True)
 
-                # Add explanation in bold
+                # Add explanation in bold (if exists, otherwise default message)
                 pdf.set_text_color(50, 50, 50)  # Gray for explanations
-                pdf.set_font('Arial', 'B', 12)  # Bold font for explanation
-                pdf.multi_cell(0, 10, f"   Explanation: {explanation}")
+                pdf.set_font("Arial", style="B", size=12)  # Bold font for explanation
+                pdf.ln(5)  # Add space between questions
 
             # Write PDF content to a BytesIO object
             output = BytesIO()
-            pdf_data = pdf.output(dest='S').encode('utf-8')  # Use UTF-8 encoding to handle all characters
-            output.write(pdf_data)
+            pdf_data = pdf.output(dest='S')  # No encoding necessary here
+            output.write(pdf_data.encode('latin1'))  # Encode to latin1 which is compatible with FPDF
             output.seek(0)  # Move the cursor to the beginning of the BytesIO object
 
             # Sending the document via Telegram bot with a proper filename
             self.bot.send_document(
                 chat_id,
                 output,
-                visible_file_name=f"{title}.pdf"
+                visible_file_name="Generated Quiz.pdf"
             )
         except Exception as e:
             print(f"An error occurred while generating the PDF: {e}")
-
     def start(self):
         @self.bot.callback_query_handler(func=lambda call: call.data == "help")
         def send_help_message(call):
@@ -117,8 +183,8 @@ class QuizBot:
             markup = telebot.types.InlineKeyboardMarkup(row_width=2)
 
             # Buttons in new order with updated text
-            app_button = telebot.types.InlineKeyboardButton("الموقع📱 (NEW)", 
-                                                            url="https://refooquizmaker.koyeb.app/")
+            app_button = telebot.types.InlineKeyboardButton("التطبيق📱", 
+                                                            url="https://www.mediafire.com/file/qqu7v8v6ufjh43o/RefOo+Quiz+V1.0.apk/file")
             help_button = telebot.types.InlineKeyboardButton("مساعدة🤝", callback_data="help")
             contact_button = telebot.types.InlineKeyboardButton("تواصل📞", url="https://t.me/RefOoSami")
             start_quiz_button = telebot.types.InlineKeyboardButton("إنشاء اختبار🧠", callback_data="start_quiz")
@@ -149,16 +215,31 @@ class QuizBot:
         def start_quiz(call):
             chat_id = call.message.chat.id
             message = """
-            قم بارسال ملف PDF او كتابة المحتوب المطلوب في رسالة...
+            *كيف تود إرسال المادة العلمية التي ترغب في استخدامها للاختبار؟* 🤔
             """
-            # Send the message asking for the type of content
+
+            # Create keyboard with options for text or PDF lecture in one row
+            markup = telebot.types.InlineKeyboardMarkup(row_width=2)  # Change row_width to 2
+            markup.add(
+                telebot.types.InlineKeyboardButton("نص📝 - محتوى مكتوب", callback_data="text_lecture"),
+                telebot.types.InlineKeyboardButton("📂 PDF - ملف PDF", callback_data="pdf_lecture")
+            )
+
+            # Delete previous message and send the new message with options
             self.bot.delete_message(chat_id, call.message.message_id)
-            self.bot.send_message(chat_id, message)
-
-            # Wait for the next message, automatically detect whether it's text or PDF
-            self.bot.register_next_step_handler(call.message, self.handle_lecture_input)
+            self.bot.send_message(chat_id, message, reply_markup=markup, parse_mode='Markdown')
 
 
+        @self.bot.callback_query_handler(func=lambda call: call.data == "text_lecture")
+        def send_lecture_as_text(call):
+            chat_id = call.message.chat.id
+            self.bot.delete_message(chat_id, call.message.message_id)
+            self.bot.send_message(
+                chat_id, 
+                "يرجى إرسال محتوى المحاضرة كنص 📝\nملاحظة: يجب ألا يتجاوز النص 4096 حرفاً.", 
+                parse_mode='Markdown'
+            )
+            self.bot.register_next_step_handler(call.message, self.get_topic_from_text)
 
         @self.bot.callback_query_handler(func=lambda call: call.data == "pdf_lecture")
         def send_lecture_as_pdf(call):
@@ -174,16 +255,14 @@ class QuizBot:
             )
             self.bot.register_next_step_handler(call.message, self.get_topic_from_pdf)
             
-        @self.bot.callback_query_handler(func=lambda call: call.data in ["0", "1", "2"])
+
+        @self.bot.callback_query_handler(func=lambda call: call.data in ["5", "10", "15", "20","25","30","40"])
         def select_num_questions(call):
             self.NUM_QUESTIONS = call.data
-            self.ask_language(call)
-            
-        @self.bot.callback_query_handler(func=lambda call: call.data in ["Arabic", "English", "German","French"])
-        def set_language(call):
-            self.lang = call.data
             self.create_quiz(call.message)
 
+
+            
         @self.bot.callback_query_handler(func=lambda call: call.data in ["feedback_yes", "feedback_no"])
         def handle_feedback(call):
             self.bot.delete_message(call.message.chat.id, call.message.message_id)
@@ -191,47 +270,29 @@ class QuizBot:
             if call.data == "feedback_yes":
                 self.bot.send_message(chat_id, "متشكرين جداً على التقييم! 🌟")
                 self.bot.send_sticker(chat_id, "CAACAgIAAxkBAAIVemYUNaMv-VaGZU18xrZTh-_z3xTIAAIEAQACVp29Ct4E0XpmZvdsNAQ")
-                self.bot.send_message(854578633, f"المستخدم {chat_id} قيم البوت بانه جيد")                
-            if call.data == "feedback_no":
+                self.bot.send_message(854578633, f"المستخدم {chat_id} قيم البوت بانه جيد")
+            elif call.data == "feedback_no":
                 # Send a contact button for the user to contact support
                 contact_button = telebot.types.InlineKeyboardMarkup()
                 contact_button.add(telebot.types.InlineKeyboardButton("تواصل بالدعم💁", url="https://t.me/RefOoSami"))
-                msg = self.bot.send_message(
+
+                self.bot.send_message(
                     chat_id,
-                    "احنا آسفين إنك مش مبسوط. لو عندك أي ملاحظات أو اقتراحات، متترددش تشاركها معانا. 🙏\n\n"
-                    "اكتب سبب التقييم وهنحاول نصلح المشكلة:",
+                    "احنا آسفين إنك مش مبسوط. لو عندك أي ملاحظات أو اقتراحات، متترددش تشاركها معانا. 🙏",
                     reply_markup=contact_button
                 )
                 self.bot.send_sticker(chat_id, "CAACAgIAAxkBAAIVfGYUNnYBOTnkuw982--5-LHV74ItAALzAANWnb0KahvrxMf6lv40BA")
                 self.bot.send_message(854578633, f"المستخدم {chat_id} قيم البوت بانه غير مقبول")
-                self.bot.register_next_step_handler(msg, self.handle_user_feedback)
-                
-                
         self.bot.polling()
-    def handle_user_feedback(self, message):
-        self.bot.send_message(
-            854578633,
-            f"ملاحظات من المستخدم {message.chat.id}:\n{message.text}"
-        )
-        self.bot.send_message(
-            message.chat.id,
-            "شكراً لملاحظاتك،! 🙏"
-        )
-    def handle_lecture_input(self, message):
-        chat_id = message.chat.id
-        # Check if the input is text or a file
-        if message.text:
-            # Process the text input
-            self.TOPIC = message.text
-            self.get_num_questions(message)
-        elif message.document and message.document.mime_type == 'application/pdf':
-            # Process the PDF file
-            self.get_topic_from_pdf(message)
-        else:
-            # If it's neither, prompt the user to send text or a valid PDF
-            self.bot.send_message(chat_id, "يرجى إرسال محتوى المحاضرة كنص أو PDF.")
-            self.bot.register_next_step_handler(message, self.handle_lecture_input)
 
+    def get_topic_from_text(self, message):
+        if message.text is None:
+            self.bot.send_message(message.chat.id, "مفيش نص مدخل. برجاء إدخال نص الموضوع.")
+            self.bot.register_next_step_handler(message, self.get_topic_from_text)
+            return
+
+        self.TOPIC = message.text
+        self.get_num_questions(message)
 
 
     def get_topic_from_pdf(self, message):
@@ -300,14 +361,18 @@ class QuizBot:
             self.get_num_questions(message)
         else:
             self.bot.register_next_step_handler(message, lambda msg: self.extract_text_from_pages(msg, pdf))
-
+            
     def get_num_questions(self, message):
         markup = telebot.types.InlineKeyboardMarkup()
-        markup.row_width = 3  # Adjust to display 3 buttons per row
+        markup.row_width = 4  # Adjust to display 3 buttons per row
         markup.add(
-            telebot.types.InlineKeyboardButton("9", callback_data="0"),
-            telebot.types.InlineKeyboardButton("18", callback_data="1"),
-            telebot.types.InlineKeyboardButton("24", callback_data="2"),
+            telebot.types.InlineKeyboardButton("5", callback_data="5"),
+            telebot.types.InlineKeyboardButton("10", callback_data="10"),
+            telebot.types.InlineKeyboardButton("15", callback_data="15"),
+            telebot.types.InlineKeyboardButton("20", callback_data="20"),
+            telebot.types.InlineKeyboardButton("25", callback_data="25"),
+            telebot.types.InlineKeyboardButton("30", callback_data="30"),
+            telebot.types.InlineKeyboardButton("40", callback_data="40"),
         )
         # Send the message with the buttons
         sent_message = self.bot.send_message(
@@ -318,77 +383,63 @@ class QuizBot:
             parse_mode='Markdown'
         )
 
-        
-    def ask_language(self, call):
-        self.bot.delete_message(call.message.chat.id, call.message.message_id)
-        # Send a message asking for language choice
-        markup = telebot.types.InlineKeyboardMarkup()
-        markup.row_width = 2  # Two options per row
-        markup.add(
-            telebot.types.InlineKeyboardButton("عربي", callback_data="Arabic"),
-            telebot.types.InlineKeyboardButton("انجليزي", callback_data="English"),
-            telebot.types.InlineKeyboardButton("الماني", callback_data="German"),
-            telebot.types.InlineKeyboardButton("فرنساوي", callback_data="French"),
-        )
 
-        # Send the message with the language options
-        self.bot.send_message(
-            call.message.chat.id,
-            "قم باختيار لغة الاسئلة🌍",
-            reply_markup=markup,
-            parse_mode='Markdown'
-        )
+ 
+        
     def create_quiz(self, message):
         self.bot.delete_message(message.chat.id, message.message_id)
+        
+        # Send waiting message and loading animation
         wait_message = self.bot.send_message(
             message.chat.id,
-            "*جارٍ إنشاء الأسئلة* 🤾\n\n"
-            "📍 تأكد من مراجعة الأسئلة بعد الإنشاء 🫵.\n"
-            "📍 قد يستغرق الأمر بعض الوقت، يرجى الانتظار 🕞.",
-            parse_mode='Markdown')        
+            "*جارٍ إنشاء الأسئلة* 🫣\n\n"
+            "🔹 تأكد من مراجعة الأسئلة بعد الإنشاء.\n"
+            "🔹 قد يستغرق الأمر بعض الوقت، يرجى الانتظار.",
+            parse_mode='Markdown'
+        )
         loading_animation = self.bot.send_sticker(message.chat.id, "CAACAgIAAxkBAAIU1GYOk5jWvCvtykd7TZkeiFFZRdUYAAIjAAMoD2oUJ1El54wgpAY0BA")
 
-        parsed_data = get_questions(self.TOPIC, self.NUM_QUESTIONS, self.lang)
+        # Fetch parsed data (questions)
+        parsed_data = get_questions(self.TOPIC, self.NUM_QUESTIONS)
 
         self.bot.delete_message(message.chat.id, wait_message.message_id)
         self.bot.delete_message(message.chat.id, loading_animation.message_id)
 
         try:
-            # Check if parsed_data is a string and parse it to a dictionary
+            # Ensure parsed_data is a dictionary and contains questions
             parsed_data = json.loads(parsed_data) if isinstance(parsed_data, str) else parsed_data
 
-            # Verify the new format and proceed
-            if isinstance(parsed_data, dict) and 'data' in parsed_data:
-                for question_data in parsed_data['data']:
+            if isinstance(parsed_data, dict):  # Ensure parsed_data is a dictionary
+                for question_id, question_data in parsed_data.items():
                     try:
-                        # Extract question text, options, correct answer, and explanation
-                        question_text = question_data["questionText"]
-                        options_list = question_data["answerOptions"]
-                        correct_answer = question_data["correctAnswer"]
-                        explanation = question_data.get("explanation", "لا يوجد شرح لهذا السؤال.")
+                        question_text = question_data["text"]
+                        options = question_data["options"]
+                        correct_answer = question_data["answer"]
 
-                        # Shuffle the options and determine the new correct option index
-                        shuffled_options = options_list[:]
-                        random.shuffle(shuffled_options)
-                        # Attempt to find the index of the correct answer in the shuffled options
-                        try:
-                            correct_option_id = shuffled_options.index(correct_answer)  # Recalculate index after shuffle
-                        except ValueError as e:
-                            # Skip the question if the correct answer is not in the options
-                            print(f"Skipping question due to error: {e}")
+                        # Extract options and shuffle them
+                        options_list = [f"{key}) {value}" for key, value in options.items()]
+                        correct_option_text = f"{correct_answer}) {options[correct_answer]}"
+
+                        # Shuffle options
+                        random.shuffle(options_list)
+                        correct_option_id = options_list.index(correct_option_text)
+
+                        # Skip questions with overly long options
+                        if any(len(option) > 100 for option in options_list):
                             continue
-                        # Send the poll
+
+                        # Send the quiz poll to the chat
                         poll_message = self.bot.send_poll(
                             chat_id=message.chat.id,
-                            question=question_text[:300],  # Limit to 300 characters (Telegram limit)
-                            options=[opt[:100] for opt in shuffled_options],  # Limit options length
+                            question=question_text,
+                            options=options_list,
                             is_anonymous=True,
                             type="quiz",
                             correct_option_id=correct_option_id,
-                            explanation=f"{explanation[:188]} - By:RefOo🫡",  # Limit explanation length
                             open_period=0,
                             protect_content=False,
                         )
+
                     except KeyError as e:
                         print(f"Key error: {e}")
                         continue
@@ -396,19 +447,16 @@ class QuizBot:
                 print("Parsed data does not contain expected keys.")
         except Exception as e:
             print(f"An error occurred: {e}")
-            self.bot.send_message(message.chat.id, "حدث خطأ أثناء إنشاء الاختبار، يرجى المحاولة لاحقًا.")
-            return
 
         # Optionally, send the questions as a PDF
         self.send_pdf(message.chat.id, parsed_data)
-        
+
         # Feedback message
         feedback_message = self.bot.send_message(
             message.chat.id,
             "شكراً لاستخدام البوت! ممكن تقيم الاختبار؟\nتقييمك هيساعدنا نحسن و نطور البوت😃",
             reply_markup=self.get_feedback_markup()
         )
-
     def get_feedback_markup(self):
         # Create an inline keyboard markup with two buttons: Yes and No
         markup = telebot.types.InlineKeyboardMarkup()
@@ -423,7 +471,7 @@ class QuizBot:
         last_name = user.last_name
         user_id = user.id
         username = user.username
-        user_details = f"nاسم المستخدم: @{username}\nالاسم الأول: {first_name}\nالاسم الأخير: {last_name}\nالرقم التعريفي: {user_id}"
+        user_details = f"\nاسم المستخدم: @{username}\nالاسم الأول: {first_name}\nالاسم الأخير: {last_name}\nالرقم التعريفي: {user_id}"
         self.bot.send_message(chat_id, user_details)
         
     
