@@ -7,7 +7,7 @@ def index():
     return "I'm Alive Beacuse Of RefOo"
 
 def run():
-    app.run(debug=True)  # Disable Flask auto-reloader
+    app.run(host='0.0.0.0', port=8000)
     
 def keep_alive():
     Thread(target=run).start()
