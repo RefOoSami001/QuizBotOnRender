@@ -6,7 +6,7 @@ except ImportError:
     print("python-dotenv not found, using environment variables directly")
 
 # Bot Configuration
-BOT_TOKEN = os.getenv('BOT_TOKEN', '5843855929:AAHlIUnglQ0Gv2uwFZ4YA5ZEufEbUqzOHp0')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '6982141096:AAEeYdFOuNzLjwZjdgSu2Z3fz9wY5dRXU8I')
 
 # Admin chat ID for notifications
 ADMIN_CHAT_ID = int(os.getenv('ADMIN_CHAT_ID', '854578633'))
