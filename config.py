@@ -1,17 +1,18 @@
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("python-dotenv not found, using environment variables directly")
 
 # Bot Configuration
-BOT_TOKEN = '6982141096:AAFpEspslCkO0KWNbONnmWjUU_87jib__g8'
+BOT_TOKEN = os.getenv('BOT_TOKEN', '6982141096:AAFpEspslCkO0KWNbONnmWjUU_87jib__g8')
 
 # Admin chat ID for notifications
-ADMIN_CHAT_ID = 854578633
+ADMIN_CHAT_ID = int(os.getenv('ADMIN_CHAT_ID', '854578633'))
 
 # Minimum text length required for generating questions
-MIN_TEXT_LENGTH = 30
+MIN_TEXT_LENGTH = int(os.getenv('MIN_TEXT_LENGTH', '30'))
 
 # Difficulty Levels
 DIFFICULTY_LEVELS = {

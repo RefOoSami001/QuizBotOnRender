@@ -22,3 +22,4 @@ telebot==0.0.5
 urllib3==2.2.1
 Werkzeug==3.0.3
 fpdf==1.7.2
+python-dotenv==1.0.1
