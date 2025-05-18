@@ -10,17 +10,24 @@ from config import (
     BOT_TOKEN, DIFFICULTY_LEVELS, MESSAGES,
     QUESTION_COUNTS, MIN_TEXT_LENGTH, ADMIN_CHAT_ID
 )
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
-# Initialize bot and API services
-bot = telebot.TeleBot(BOT_TOKEN)
+# Initialize bot and API services with threading support
+bot = telebot.TeleBot(BOT_TOKEN, threaded=True)
 api_service1 = MCQGeneratorAPI()
 api_service2 = MCQGeneratorAPI2()
 
 # Store user states
 user_states = {}
+user_states_lock = threading.Lock()
 
 # Store feedback data
 user_feedback = {}
+user_feedback_lock = threading.Lock()
+
+# Thread pool for handling question generation
+executor = ThreadPoolExecutor(max_workers=10)
 
 def get_text(chat_id, text_key, *format_args):
     """Get text in user's language or default to English."""
@@ -493,13 +500,25 @@ def handle_text(message):
         get_text(message.chat.id, 'analyzing_text')
     )
     
-    # Generate questions
-    generate_questions(message.chat.id, message.text, processing_msg)
+    # Generate questions asynchronously
+    generate_questions_async(message.chat.id, message.text, processing_msg)
+
+def generate_questions_async(chat_id, text, processing_msg=None):
+    """Asynchronous wrapper for generate_questions"""
+    def _generate():
+        try:
+            generate_questions(chat_id, text, processing_msg)
+        except Exception as e:
+            print(f"Error in generate_questions_async: {e}")
+            
+    # Submit the task to the thread pool
+    executor.submit(_generate)
 
 def generate_questions(chat_id, text, processing_msg=None):
     try:
-        # Get the current user state
-        user_state = user_states.get(chat_id, {})
+        # Get the current user state thread-safely
+        with user_states_lock:
+            user_state = user_states.get(chat_id, {}).copy()
         
         # Get model and set default if not found
         model = user_state.get('model')
@@ -649,7 +668,8 @@ def generate_questions(chat_id, text, processing_msg=None):
             )
             
             # Request feedback
-            user_states[chat_id]['state'] = 'feedback'
+            with user_states_lock:
+                user_states[chat_id]['state'] = 'feedback'
             bot.send_message(
                 chat_id,
                 get_text(chat_id, 'feedback_request'),
@@ -672,8 +692,9 @@ def generate_questions(chat_id, text, processing_msg=None):
         notify_admin(f"Error occurred during question generation: {str(e)}")
         
         # Preserve language when resetting state
-        lang = user_states.get(chat_id, {}).get('language', 'en')
-        user_states[chat_id] = {'state': 'main_menu', 'language': lang}
+        with user_states_lock:
+            lang = user_states.get(chat_id, {}).get('language', 'en')
+            user_states[chat_id] = {'state': 'main_menu', 'language': lang}
         
         bot.send_message(
             chat_id,
