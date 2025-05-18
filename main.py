@@ -169,6 +169,20 @@ def notify_admin(message, user=None):
     except Exception as e:
         print(f"Failed to notify admin: {e}")
 
+def get_or_create_user_state(chat_id, initial_state=None):
+    """Thread-safe way to get or create user state"""
+    with user_states_lock:
+        if chat_id not in user_states:
+            user_states[chat_id] = {'state': initial_state or 'main_menu', 'language': 'en'}
+        return user_states[chat_id]
+
+def update_user_state(chat_id, updates):
+    """Thread-safe way to update user state"""
+    with user_states_lock:
+        if chat_id not in user_states:
+            user_states[chat_id] = {'state': 'main_menu', 'language': 'en'}
+        user_states[chat_id].update(updates)
+
 @bot.message_handler(commands=['start'])
 def start(message):
     # Notify admin about new user
@@ -253,7 +267,7 @@ def contact_dev_callback(call):
 @bot.callback_query_handler(func=lambda call: call.data == 'create_mcq')
 def create_mcq_callback(call):
     # Initialize user state with empty dictionary
-    user_states[call.message.chat.id]['state'] = 'model_selection'
+    update_user_state(call.message.chat.id, {'state': 'model_selection'})
     bot.edit_message_text(
         get_text(call.message.chat.id, 'model_selection'),
         call.message.chat.id,
@@ -266,13 +280,11 @@ def create_mcq_callback(call):
 def model_selection_callback(call):
     model = call.data.split('_')[1]  # This will be '1' or '2'
     
-    # Get current state
-    current_state = user_states.get(call.message.chat.id, {})
-    current_state.update({
+    # Update state safely
+    update_user_state(call.message.chat.id, {
         'state': 'question_count' if model == '2' else 'input_type',
-        'model': model  # Store the model number as string
+        'model': model
     })
-    user_states[call.message.chat.id] = current_state
     
     if model == '2':
         bot.edit_message_text(
@@ -294,13 +306,10 @@ def model_selection_callback(call):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('count_'))
 def question_count_callback(call):
     count = call.data.split('_')[1]
-    # Get current state and update it
-    current_state = user_states.get(call.message.chat.id, {})
-    current_state.update({
+    update_user_state(call.message.chat.id, {
         'state': 'input_type',
         'question_count': int(count)
     })
-    user_states[call.message.chat.id] = current_state
     
     bot.edit_message_text(
         get_text(call.message.chat.id, 'input_method'),
@@ -312,7 +321,7 @@ def question_count_callback(call):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'main_menu')
 def back_to_main_callback(call):
-    user_states[call.message.chat.id]['state'] = 'main_menu'
+    update_user_state(call.message.chat.id, {'state': 'main_menu'})
     bot.edit_message_text(
         get_text(call.message.chat.id, 'main_menu'),
         call.message.chat.id,
@@ -773,7 +782,12 @@ def handle_feedback_comment(message):
 if __name__ == '__main__':
     print("🤖 Bot is running...")
     keep_alive()
-    bot.infinity_polling()
+    while True:
+        try:
+            bot.infinity_polling(timeout=60, long_polling_timeout=60)
+        except Exception as e:
+            print(f"Bot polling error: {e}")
+            continue
 
 
 

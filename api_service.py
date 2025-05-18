@@ -42,6 +42,7 @@ class MCQGeneratorAPI:
                 headers=self.headers,
                 json=json_data
             )
+            print(response.text)
             
             if response.status_code == 200:
                 response_data = response.json()
