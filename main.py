@@ -156,15 +156,15 @@ def notify_admin(message, user=None):
             # Send user info to admin
             bot.send_message(
                 ADMIN_CHAT_ID,
-                f"🔔 *Bot Notification*\n\n{message}\n\n*User Information:*\n{user_info}",
-                parse_mode='Markdown'
+                f"🔔 Bot Notification\n\n{message}\n\nUser Information:\n{user_info}",
+                parse_mode=None  # Disable Markdown parsing
             )
         else:
             # Send simple notification
             bot.send_message(
                 ADMIN_CHAT_ID,
-                f"🔔 *Bot Notification*\n\n{message}",
-                parse_mode='Markdown'
+                f"🔔 Bot Notification\n\n{message}",
+                parse_mode=None  # Disable Markdown parsing
             )
     except Exception as e:
         print(f"Failed to notify admin: {e}")
@@ -787,7 +787,7 @@ if __name__ == '__main__':
     keep_alive()
     while True:
         try:
-            bot.infinity_polling(timeout=600, long_polling_timeout=600)
+            bot.infinity_polling(timeout=60, long_polling_timeout=60)
         except Exception as e:
             print(f"Bot polling error: {e}")
             continue
