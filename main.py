@@ -644,6 +644,9 @@ def generate_questions(chat_id, text, processing_msg=None):
                             continue
                         
                         # Find correct option index
+                        if not correct_answer or not correct_answer.lower() in ['a', 'b', 'c', 'd']:
+                            skipped_questions += 1
+                            continue
                         correct_option = ord(correct_answer.lower()) - ord('a')
                         
                         try:
@@ -784,7 +787,7 @@ if __name__ == '__main__':
     keep_alive()
     while True:
         try:
-            bot.infinity_polling(timeout=60, long_polling_timeout=60)
+            bot.infinity_polling(timeout=600, long_polling_timeout=600)
         except Exception as e:
             print(f"Bot polling error: {e}")
             continue
