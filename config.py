@@ -6,7 +6,7 @@ except ImportError:
     print("python-dotenv not found, using environment variables directly")
 
 # Bot Configuration
-BOT_TOKEN = os.getenv('BOT_TOKEN', '5843855929:AAHlIUnglQ0Gv2uwFZ4YA5ZEufEbUqzOHp0')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '6982141096:AAEeYdFOuNzLjwZjdgSu2Z3fz9wY5dRXU8I')
 
 # Admin chat ID for notifications
 ADMIN_CHAT_ID = int(os.getenv('ADMIN_CHAT_ID', '854578633'))
@@ -64,300 +64,120 @@ QUESTION_COUNTS = {
 MESSAGES = {
     'en': {
         'welcome': (
-            "👋 *Welcome to the MCQ Generator Bot!*\n\n"
-            "🎓 I can help you generate multiple-choice questions from your study materials.\n\n"
-            "✨ *Features:*\n"
-            "• Generate questions from text\n"
-            "• Generate questions from PDF files\n"
-            "• Interactive quiz format\n"
-            "• Detailed explanations\n\n"
-            "Please choose an option below:"
+            "👋 *Welcome to RefOo Quiz Maker!*\n\n"
+            "I can transform your study materials into interactive quizzes. Choose an option to get started!"
         ),
         'help': (
-            "❓ *Help & Tips*\n\n"
-            "📝 *How to use the bot:*\n"
-            "1. Choose 'Create MCQ Questions'\n"
-            "2. Select input method (Text/PDF)\n"
-            "3. Send your material\n"
-            "4. Get your questions!\n\n"
-            "💡 *Tips for best results:*\n"
-            "• Use clear, well-structured text\n"
-            "• For PDFs, select relevant pages\n"
-            "• Try different difficulty levels\n"
-            "• Keep text length reasonable\n\n"
-            "❓ *Common questions:*\n"
-            "• *Q:* How many questions will I get?\n"
-            "• *A:* Usually 10-20 questions per submission\n\n"
-            "• *Q:* Can I get questions in different languages?\n"
-            "• *A:* Currently supports English only\n\n"
-            "Need more help? Contact the developer!"
+            "❓ *Quick Guide*\n\n"
+            "1️⃣ Select 'Create MCQ Questions'\n"
+            "2️⃣ Choose a model (Model 2 lets you pick question count)\n"
+            "3️⃣ Send text or PDF\n"
+            "4️⃣ Get your quiz!\n\n"
+            "💡 *Tips:*\n"
+            "• Clear, structured text works best\n"
+            "• For PDFs, select specific pages for focused quizzes"
         ),
         'contact': (
-            "📧 *Contact Information*\n\n"
-            "Feel free to reach out if you have any questions or suggestions!\n\n"
-            "📧 Email: raafatsami101@gmail.com\n"
-            "📱 Telegram: @RefOoSami\n"
-            "📞 Whatsapp: +201011508719\n"
+            "👨‍💻 *Need help?*\n\n"
+            "Email: raafatsami101@gmail.com\n"
+            "Telegram: @RefOoSami\n"
+            "WhatsApp: +201011508719"
         ),
         'model_selection': (
-            "🤖 *Select AI Model*\n\n"
-            "Choose which AI model to use for generating questions:\n\n"
-            "• *Model 1*: Standard model with explanations\n"
-            "• *Model 2*: Advanced model with customizable question count\n\n"
-            "💡 *Tip:* Model 2 is better for generating specific number of questions"
+            "🤖 *Choose your quiz creator*\n\n"
+            "• *🧠Standard Quiz*: Standard with explanations\n"
+            "• *✨Custom Quiz*: Custom number of questions"
         ),
-        'question_count': (
-            "📊 *Select Number of Questions*\n\n"
-            "Choose how many questions you want to generate:\n\n"
-            "💡 *Tip:* More questions may take longer to generate"
-        ),
-        'select_language': (
-            "🌐 *Select Your Language*\n\n"
-            "Please choose your preferred language:"
-        ),
-        'language_changed': (
-            "✅ Language set to English"
-        ),
+        'question_count': "📊 *How many questions would you like?*",
         'input_method': (
-            "📝 *Choose Input Method*\n\n"
-            "How would you like to send your study material?\n\n"
-            "• 📄 *Text*: Send your material as plain text\n"
-            "• 📚 *PDF*: Upload a PDF file and select pages\n\n"
-            "💡 *Tip:* Text input is faster, while PDFs are better for formatted content."
+            "📝 *How would you like to share your materials?*\n\n"
+            "• 📄 Text message\n"
+            "• 📚 PDF document"
         ),
-        'send_text': (
-            "📝 *Send Your Text*\n\n"
-            "Please send your study material as text.\n"
-            "I'll analyze it and generate multiple-choice questions.\n\n"
-            "💡 *Tip:* Your text should be at least 30 characters long for better results."
-        ),
-        'text_too_short': (
-            "❌ *Text Too Short*\n\n"
-            "The text you provided is too short to generate meaningful questions.\n"
-            "Please send a longer text (at least 30 characters)."
-        ),
-        'send_pdf': (
-            "📚 *Send Your PDF*\n\n"
-            "Please send your PDF file.\n"
-            "After receiving the file, I'll ask you to specify which pages to analyze.\n\n"
-            "💡 *Tip:* Make sure your PDF is readable and not password-protected."
-        ),
-        'processing_pdf': "⏳ Processing your PDF file...",
-        'pdf_processed': (
-            "✅ PDF processed successfully!\n\n"
-            "📚 The document has *{0}* pages.\n\n"
-            "Please send the page range in the format:\n"
-            "`start-end` (e.g., `1-5`)\n\n"
-            "💡 *Tip:* You can analyze the entire document by sending `1-{0}`"
-        ),
-        'extracting_text': "⏳ Extracting text from PDF pages...",
-        'text_extracted': "✅ Text extracted successfully!\n\n⏳ Generating questions...",
-        'analyzing_text': "⏳ Analyzing your text and generating questions...",
+        'send_text': "📝 Now paste or type your study text. The more detailed your text, the better the questions!",
+        'text_too_short': "⚠️ I need more information to create good questions. Please send a longer piece of text.",
+        'send_pdf': "📚 Please upload your PDF document.",
+        'processing_pdf': "⏳ Analyzing your PDF...",
+        'extracting_text': "⏳ Creating questions based on your selected pages...",
+        'text_extracted': "✅ Content extracted! Building your quiz...",
+        'analyzing_text': "🧠 Analyzing your material and crafting questions...",
         'no_questions': (
-            "❌ No questions could be generated from the provided material.\n\n"
-            "Try:\n"
-            "• Using different material\n"
-            "• Selecting a different difficulty level\n"
-            "• Making the text more detailed"
+            "⚠️ I couldn't generate questions from this material.\n\n"
+            "Try sharing different content or more detailed information."
         ),
-        'questions_generated': "✅ Generated {0} questions!\n\n📝 Sending questions...",
-        'question_header': "📝 Question {0}/{1}\n\n{2}",
-        'completion': (
-            "🎉 *Questions Generated Successfully!*\n\n"
-            "📊 *Summary:*\n"
-            "• Total Questions: {0}\n"
-            "• Questions Sent: {1}\n"
-            "• Questions Skipped: {2}\n\n"
-            "💡 *Tips:*\n"
-            "• Try different materials for varied questions\n"
-            "• Use the help menu for more tips\n"
-            "• Share your feedback with the developer"
-        ),
-        'feedback_request': (
-            "📝 *How was your experience?*\n\n"
-            "Please rate the quality of the generated questions:"
-        ),
-        'feedback_thanks': (
-            "🙏 *Thank you for your feedback!*\n\n"
-            "Your input helps us improve the service."
-        ),
-        'feedback_comment': (
-            "💬 *Additional Comments*\n\n"
-            "If you'd like to share more detailed feedback, please send a message. Or tap Skip if you're done."
-        ),
-        'feedback_skip': "⏭️ Skip",
-        'feedback_excellent': "⭐⭐⭐⭐⭐ Excellent",
-        'feedback_good': "⭐⭐⭐⭐ Good",
-        'feedback_average': "⭐⭐⭐ Average",
-        'feedback_poor': "⭐⭐ Poor",
-        'feedback_very_poor': "⭐ Very Poor",
-        'invalid_pdf': "❌ Please send a PDF file.",
-        'pdf_error': "❌ Error processing PDF: {0}\n\nPlease try again with a different file.",
-        'invalid_range': "❌ Invalid page range. Please send the range in the format `start-end` (e.g., `1-5`).",
-        'error': (
-            "❌ *An error occurred*\n\n"
-            "Error details: `{0}`\n\n"
-            "Please try again or contact the developer if the problem persists."
-        ),
-        'returning_to_menu': "🔙 Returning to main menu...",
-        'main_menu': "🔙 *Main Menu*\n\nPlease select an option:",
-        'create_mcq': "📝 Create MCQ Questions",
-        'contact_dev': "👨‍💻 Contact Developer",
-        'help_btn': "❓ Help & Tips",
-        'model1': "🤖 AI Model 1",
-        'model2': "🤖 AI Model 2",
-        'back_main': "🔙 Back to Main Menu",
-        'back': "🔙 Back",
-        'text_btn': "📄 Send Text",
-        'pdf_btn': "📚 Send PDF"
+        'questions_generated': "✨ Your quiz is ready! Sending {0} questions...",
+        'invalid_pdf': "⚠️ Please send a valid PDF file.",
+        'pdf_error': "⚠️ I had trouble reading that PDF. Could you try another file?",
+        'invalid_range': "⚠️ Please use the format '1-10' to specify page numbers.",
+        'error': "⚠️ Something went wrong. Let's try again!",
+        'returning_to_menu': "Taking you back to the main menu...",
+        'main_menu': "*What would you like to do?*",
+        'create_mcq': "📝 Create Quiz",
+        'contact_dev': "👨‍💻 Contact Support",
+        'help_btn': "❓ How to Use",
+        'model1': "🧠 Standard Quiz",
+        'model2': "✨ Custom Quiz",
+        'text_btn': "📄 Text",
+        'pdf_btn': "📚 PDF",
+        'quiz_completed': "🎉 *Your quiz is complete!*\n\nWould you like to create another one?"
     },
     'ar': {
         'welcome': (
-            "👋 *مرحبا بك في بوت توليد أسئلة الاختيار من متعدد!*\n\n"
-            "🎓 يمكنني مساعدتك في توليد أسئلة اختيار من متعدد من المواد الدراسية الخاصة بك.\n\n"
-            "✨ *الميزات:*\n"
-            "• توليد أسئلة من النص\n"
-            "• توليد أسئلة من ملفات PDF\n"
-            "• تنسيق اختبار تفاعلي\n"
-            "• شروحات مفصلة\n\n"
-            "الرجاء اختيار أحد الخيارات أدناه:"
+            "👋 *مرحباً بك في كويز جين!*\n\n"
+            "يمكنني تحويل موادك الدراسية إلى اختبارات تفاعلية. اختر خياراً للبدء!"
         ),
         'help': (
-            "❓ *المساعدة والنصائح*\n\n"
-            "📝 *كيفية استخدام البوت:*\n"
-            "1. اختر 'إنشاء أسئلة اختيار من متعدد'\n"
-            "2. حدد طريقة الإدخال (نص/PDF)\n"
-            "3. أرسل المادة الخاصة بك\n"
-            "4. احصل على أسئلتك!\n\n"
-            "💡 *نصائح للحصول على أفضل النتائج:*\n"
-            "• استخدم نصًا واضحًا ومنظمًا جيدًا\n"
-            "• بالنسبة لملفات PDF، حدد الصفحات ذات الصلة\n"
-            "• جرب مستويات صعوبة مختلفة\n"
-            "• احتفظ بطول نص معقول\n\n"
-            "❓ *الأسئلة الشائعة:*\n"
-            "• *س:* كم عدد الأسئلة التي سأحصل عليها؟\n"
-            "• *ج:* عادة 10-20 سؤالًا لكل تقديم\n\n"
-            "• *س:* هل يمكنني الحصول على أسئلة بلغات مختلفة؟\n"
-            "• *ج:* يدعم حاليًا اللغة الإنجليزية فقط\n\n"
-            "هل تحتاج إلى مزيد من المساعدة؟ اتصل بالمطور!"
+            "❓ *دليل سريع*\n\n"
+            "1️⃣ اختر 'إنشاء أسئلة اختيار من متعدد'\n"
+            "2️⃣ اختر نموذجاً (النموذج 2 يتيح لك اختيار عدد الأسئلة)\n"
+            "3️⃣ أرسل نص أو ملف PDF\n"
+            "4️⃣ احصل على اختبارك!\n\n"
+            "💡 *نصائح:*\n"
+            "• النص الواضح والمنظم يعمل بشكل أفضل\n"
+            "• بالنسبة لملفات PDF، اختر صفحات محددة للاختبارات المركزة"
         ),
         'contact': (
-            "📧 *معلومات الاتصال*\n\n"
-            "لا تتردد في التواصل إذا كان لديك أي أسئلة أو اقتراحات!\n\n"
-            "📧 Email: raafatsami101@gmail.com\n"
-            "📱 Telegram: @RefOoSami\n"
-            "📞 Whatsapp: +201011508719\n"
+            "👨‍💻 *بحاجة إلى مساعدة؟*\n\n"
+            "البريد الإلكتروني: raafatsami101@gmail.com\n"
+            "تليجرام: @RefOoSami\n"
+            "واتساب: +201011508719"
         ),
         'model_selection': (
-            "🤖 *اختر نموذج الذكاء الاصطناعي*\n\n"
-            "اختر نموذج الذكاء الاصطناعي الذي ترغب في استخدامه لتوليد الأسئلة:\n\n"
-            "• *النموذج 1*: نموذج قياسي مع شروحات\n"
-            "• *النموذج 2*: نموذج متقدم مع عدد أسئلة قابل للتخصيص\n\n"
-            "💡 *نصيحة:* النموذج 2 أفضل لتوليد عدد محدد من الأسئلة"
+            "🤖 *اختر منشئ الاختبار الخاص بك*\n\n"
+            "• *النموذج 1*: قياسي مع شروحات\n"
+            "• *النموذج 2*: عدد مخصص من الأسئلة"
         ),
-        'question_count': (
-            "📊 *حدد عدد الأسئلة*\n\n"
-            "اختر عدد الأسئلة التي ترغب في توليدها:\n\n"
-            "💡 *نصيحة:* قد يستغرق عدد أكبر من الأسئلة وقتًا أطول للتوليد"
-        ),
-        'select_language': (
-            "🌐 *اختر لغتك*\n\n"
-            "الرجاء اختيار اللغة المفضلة لديك:"
-        ),
-        'language_changed': (
-            "✅ تم تغيير اللغة إلى العربية"
-        ),
+        'question_count': "📊 *كم عدد الأسئلة التي ترغب فيها؟*",
         'input_method': (
-            "📝 *اختر طريقة الإدخال*\n\n"
-            "كيف ترغب في إرسال المادة الدراسية الخاصة بك؟\n\n"
-            "• 📄 *نص*: أرسل المادة كنص عادي\n"
-            "• 📚 *PDF*: قم بتحميل ملف PDF وتحديد الصفحات\n\n"
-            "💡 *نصيحة:* إدخال النص أسرع، بينما ملفات PDF أفضل للمحتوى المنسق."
+            "📝 *كيف تود مشاركة موادك؟*\n\n"
+            "• 📄 رسالة نصية\n"
+            "• 📚 ملف PDF"
         ),
-        'send_text': (
-            "📝 *أرسل النص الخاص بك*\n\n"
-            "الرجاء إرسال المادة الدراسية كنص.\n"
-            "سأقوم بتحليلها وتوليد أسئلة اختيار من متعدد.\n\n"
-            "💡 *نصيحة:* يجب أن يكون النص 30 حرفًا على الأقل للحصول على نتائج أفضل."
-        ),
-        'text_too_short': (
-            "❌ *النص قصير جدًا*\n\n"
-            "النص الذي قدمته قصير جدًا لتوليد أسئلة ذات مغزى.\n"
-            "الرجاء إرسال نص أطول (30 حرفًا على الأقل)."
-        ),
-        'send_pdf': (
-            "📚 *أرسل ملف PDF الخاص بك*\n\n"
-            "الرجاء إرسال ملف PDF الخاص بك.\n"
-            "بعد استلام الملف، سأطلب منك تحديد الصفحات التي تريد تحليلها.\n\n"
-            "💡 *نصيحة:* تأكد من أن ملف PDF قابل للقراءة وغير محمي بكلمة مرور."
-        ),
-        'processing_pdf': "⏳ معالجة ملف PDF الخاص بك...",
-        'pdf_processed': (
-            "✅ تمت معالجة ملف PDF بنجاح!\n\n"
-            "📚 يحتوي المستند على *{0}* صفحة.\n\n"
-            "الرجاء إرسال نطاق الصفحات بالتنسيق:\n"
-            "`البداية-النهاية` (مثال: `1-5`)\n\n"
-            "💡 *نصيحة:* يمكنك تحليل المستند بأكمله بإرسال `1-{0}`"
-        ),
-        'extracting_text': "⏳ استخراج النص من صفحات PDF...",
-        'text_extracted': "✅ تم استخراج النص بنجاح!\n\n⏳ توليد الأسئلة...",
-        'analyzing_text': "⏳ تحليل النص الخاص بك وتوليد الأسئلة...",
+        'send_text': "📝 الآن انسخ أو اكتب نص الدراسة. كلما كان النص أكثر تفصيلاً، كانت الأسئلة أفضل!",
+        'text_too_short': "⚠️ أحتاج إلى مزيد من المعلومات لإنشاء أسئلة جيدة. يرجى إرسال نص أطول.",
+        'send_pdf': "📚 يرجى تحميل ملف PDF الخاص بك.",
+        'processing_pdf': "⏳ تحليل ملف PDF الخاص بك...",
+        'extracting_text': "⏳ إنشاء أسئلة بناءً على الصفحات المختارة...",
+        'text_extracted': "✅ تم استخراج المحتوى! بناء اختبارك...",
+        'analyzing_text': "🧠 تحليل المواد الخاصة بك وصياغة الأسئلة...",
         'no_questions': (
-            "❌ لا يمكن توليد أسئلة من المادة المقدمة.\n\n"
-            "حاول:\n"
-            "• استخدام مادة مختلفة\n"
-            "• اختيار مستوى صعوبة مختلف\n"
-            "• جعل النص أكثر تفصيلاً"
+            "⚠️ لم أتمكن من إنشاء أسئلة من هذه المادة.\n\n"
+            "حاول مشاركة محتوى مختلف أو معلومات أكثر تفصيلاً."
         ),
-        'questions_generated': "✅ تم توليد {0} سؤال!\n\n📝 جاري إرسال الأسئلة...",
-        'question_header': "📝 سؤال {0}/{1}\n\n{2}",
-        'completion': (
-            "🎉 *تم توليد الأسئلة بنجاح!*\n\n"
-            "📊 *ملخص:*\n"
-            "• إجمالي الأسئلة: {0}\n"
-            "• الأسئلة المرسلة: {1}\n"
-            "• الأسئلة التي تم تخطيها: {2}\n\n"
-            "💡 *نصائح:*\n"
-            "• جرب مواد مختلفة للحصول على أسئلة متنوعة\n"
-            "• استخدم قائمة المساعدة للمزيد من النصائح\n"
-            "• شارك ملاحظاتك مع المطور"
-        ),
-        'feedback_request': (
-            "📝 *كيف كانت تجربتك؟*\n\n"
-            "يرجى تقييم جودة الأسئلة التي تم إنشاؤها:"
-        ),
-        'feedback_thanks': (
-            "🙏 *شكرًا لك على ملاحظاتك!*\n\n"
-            "مساهمتك تساعدنا في تحسين الخدمة."
-        ),
-        'feedback_comment': (
-            "💬 *تعليقات إضافية*\n\n"
-            "إذا كنت ترغب في مشاركة ملاحظات أكثر تفصيلاً، يرجى إرسال رسالة. أو اضغط على تخطي إذا كنت قد انتهيت."
-        ),
-        'feedback_skip': "⏭️ تخطي",
-        'feedback_excellent': "⭐⭐⭐⭐⭐ ممتاز",
-        'feedback_good': "⭐⭐⭐⭐ جيد",
-        'feedback_average': "⭐⭐⭐ متوسط",
-        'feedback_poor': "⭐⭐ ضعيف",
-        'feedback_very_poor': "⭐ ضعيف جدًا",
-        'invalid_pdf': "❌ الرجاء إرسال ملف PDF.",
-        'pdf_error': "❌ خطأ في معالجة ملف PDF: {0}\n\nالرجاء المحاولة مرة أخرى باستخدام ملف مختلف.",
-        'invalid_range': "❌ نطاق صفحات غير صالح. الرجاء إرسال النطاق بالتنسيق `البداية-النهاية` (مثال: `1-5`).",
-        'error': (
-            "❌ *حدث خطأ*\n\n"
-            "تفاصيل الخطأ: `{0}`\n\n"
-            "الرجاء المحاولة مرة أخرى أو الاتصال بالمطور إذا استمرت المشكلة."
-        ),
-        'returning_to_menu': "🔙 العودة إلى القائمة الرئيسية...",
-        'main_menu': "🔙 *القائمة الرئيسية*\n\nالرجاء الاختيار من الازرار التالية:",
-        'create_mcq': "📝 إنشاء أسئلة اختيار من متعدد",
-        'contact_dev': "👨‍💻 اتصل بالمطور",
-        'help_btn': "❓ المساعدة والنصائح",
-        'model1': "🤖 نموذج الذكاء الاصطناعي 1",
-        'model2': "🤖 نموذج الذكاء الاصطناعي 2",
-        'back_main': "🔙 العودة إلى القائمة الرئيسية",
-        'back': "🔙 رجوع",
-        'text_btn': "📄 إرسال نص",
-        'pdf_btn': "📚 إرسال PDF"
+        'questions_generated': "✨ اختبارك جاهز! إرسال {0} أسئلة...",
+        'invalid_pdf': "⚠️ يرجى إرسال ملف PDF صالح.",
+        'pdf_error': "⚠️ واجهت صعوبة في قراءة ملف PDF هذا. هل يمكنك تجربة ملف آخر؟",
+        'invalid_range': "⚠️ يرجى استخدام التنسيق '1-10' لتحديد أرقام الصفحات.",
+        'error': "⚠️ حدث خطأ ما. دعنا نحاول مرة أخرى!",
+        'returning_to_menu': "إعادتك إلى القائمة الرئيسية...",
+        'main_menu': "*ماذا تريد أن تفعل؟*",
+        'create_mcq': "📝 إنشاء اختبار",
+        'contact_dev': "👨‍💻 اتصل بالدعم",
+        'help_btn': "❓ كيفية الاستخدام",
+        'model1': "🧠 اختبار قياسي",
+        'model2': "✨ اختبار مخصص",
+        'text_btn': "📄 نص",
+        'pdf_btn': "📚 PDF",
+        'quiz_completed': "🎉 *اكتمل اختبارك!*\n\nهل ترغب في إنشاء اختبار آخر؟"
     }
 } 
